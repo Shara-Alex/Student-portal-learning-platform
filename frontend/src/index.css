@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+/* Design tokens. Change these to re-skin the whole app. */
+@theme {
+  --color-brand: #1d4ed8;
+  --color-brand-dark: #1e3a8a;
+  --color-surface: #f8fafc;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  @apply bg-surface text-slate-800 antialiased;
+}

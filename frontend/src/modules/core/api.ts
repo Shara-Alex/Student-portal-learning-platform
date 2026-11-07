@@ -1,0 +1,24 @@
+import { api } from "@/lib/api";
+import { auth } from "@/lib/auth";
+import { useQuery } from "@tanstack/react-query";
+import type { School, Term, User } from "./types";
+
+export async function login(username: string, password: string) {
+  const data = await api.post<{ access: string; refresh: string }>("/api/auth/login/", { username, password });
+  auth.set(data.access, data.refresh);
+}
+
+export function logout() {
+  auth.clear();
+  window.location.href = "/login";
+}
+
+// Hooks: components call these; TanStack Query caches and refetches for us.
+export const useMe = () =>
+  useQuery({ queryKey: ["me"], queryFn: () => api.get<User>("/api/auth/me/"), enabled: auth.isLoggedIn() });
+
+export const useSchool = () =>
+  useQuery({ queryKey: ["school"], queryFn: () => api.get<School | null>("/api/core/school/") });
+
+export const useTerms = () =>
+  useQuery({ queryKey: ["terms"], queryFn: () => api.get<{ results: Term[] }>("/api/core/terms/") });
