@@ -32,3 +32,14 @@ class ReadOnlyOrAdmin(BasePermission):
         if not (request.user and request.user.is_authenticated):
             return False
         return request.method in ("GET", "HEAD", "OPTIONS") or request.user.role == "admin"
+
+
+class StaffReadAdminWrite(BasePermission):
+    """Admins and teachers can read; only admins can write. Parents and students get nothing."""
+
+    def has_permission(self, request, view):
+        if not (request.user and request.user.is_authenticated):
+            return False
+        if request.method in ("GET", "HEAD", "OPTIONS"):
+            return request.user.role in ("admin", "teacher")
+        return request.user.role == "admin"

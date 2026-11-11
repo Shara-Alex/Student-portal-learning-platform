@@ -4,10 +4,11 @@
  * The sidebar and the router are both generated from this list.
  */
 import type { LucideIcon } from "lucide-react";
-import { LayoutDashboard } from "lucide-react";
+import { LayoutDashboard, Users } from "lucide-react";
 import type { ComponentType } from "react";
 import type { Role } from "./core/types";
 import { DashboardPage } from "./core/DashboardPage";
+import { StudentsPage } from "./students/StudentsPage";
 
 export interface Module {
   name: string;       // folder name, also the URL: /students
@@ -19,5 +20,5 @@ export interface Module {
 
 export const modules: Module[] = [
   { name: "", label: "Dashboard", icon: LayoutDashboard, page: DashboardPage, roles: ["admin", "teacher", "parent", "student"] },
-  // { name: "students", label: "Students", icon: Users, page: StudentsPage, roles: ["admin", "teacher"] },
+  { name: "students", label: "Students", icon: Users, page: StudentsPage, roles: ["admin", "teacher"] },
 ];

@@ -33,7 +33,7 @@ Debugging a feature means opening exactly two folders.
 | # | Module          | Status  | Covers                                                  |
 |---|-----------------|---------|---------------------------------------------------------|
 | 1 | core            | ✅ base | School settings, users & roles, academic years, terms, login |
-| 2 | students        | —       | Students, guardians, classes, enrolment                 |
+| 2 | students        | ✅      | Students, guardians, classes, enrolment                 |
 | 3 | academics       | —       | Subjects, teacher assignments, timetable / day planner  |
 | 4 | assessments     | —       | Tests, marking schemes, marks, weighted results, reports |
 | 5 | attendance      | —       | Daily / per-lesson attendance                           |

@@ -9,4 +9,5 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/auth/", include("apps.core.auth_urls")),
     path("api/core/", include("apps.core.urls")),
+    path("api/students/", include("apps.students.urls")),
 ]

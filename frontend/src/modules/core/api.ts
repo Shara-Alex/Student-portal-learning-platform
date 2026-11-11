@@ -1,4 +1,4 @@
-import { api } from "@/lib/api";
+import { api, type Paginated } from "@/lib/api";
 import { auth } from "@/lib/auth";
 import { useQuery } from "@tanstack/react-query";
 import type { School, Term, User } from "./types";
@@ -22,3 +22,6 @@ export const useSchool = () =>
 
 export const useTerms = () =>
   useQuery({ queryKey: ["terms"], queryFn: () => api.get<{ results: Term[] }>("/api/core/terms/") });
+
+export const useTeachers = () =>
+  useQuery({ queryKey: ["users", "teacher"], queryFn: () => api.get<Paginated<User>>("/api/core/users/?role=teacher") });

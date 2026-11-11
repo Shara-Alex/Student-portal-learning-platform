@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "corsheaders",
     # our modules (one app per feature, added as we build them)
     "apps.core",
+    "apps.students",
 ]
 
 MIDDLEWARE = [

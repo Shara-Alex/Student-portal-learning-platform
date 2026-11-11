@@ -44,6 +44,29 @@ async function request<T>(method: string, url: string, body?: unknown, retry = t
   return data as T;
 }
 
+/** The shape Django REST Framework returns for paginated lists. */
+export interface Paginated<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
+/** Turn a failed API call into one readable line, e.g. "admission_number: already exists". */
+export function errorText(e: unknown): string {
+  if (!(e instanceof ApiError)) return "Something went wrong. Please try again.";
+  if (e.status === 403) return "You do not have permission to do that.";
+  if (e.data && typeof e.data === "object") {
+    return Object.entries(e.data as Record<string, unknown>)
+      .map(([field, msg]) => {
+        const text = Array.isArray(msg) ? msg.join(" ") : String(msg);
+        return field === "detail" || field === "non_field_errors" ? text : `${field.replace(/_/g, " ")}: ${text}`;
+      })
+      .join(" · ");
+  }
+  return `Request failed (${e.status}).`;
+}
+
 export const api = {
   get: <T>(url: string) => request<T>("GET", url),
   post: <T>(url: string, body?: unknown) => request<T>("POST", url, body),

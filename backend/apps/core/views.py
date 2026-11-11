@@ -2,8 +2,8 @@ from rest_framework import generics, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import AcademicYear, School, Term
-from .permissions import ReadOnlyOrAdmin
+from .models import AcademicYear, School, Term, User
+from .permissions import IsStaff, ReadOnlyOrAdmin
 from .serializers import AcademicYearSerializer, SchoolSerializer, TermSerializer, UserSerializer
 
 
@@ -43,3 +43,16 @@ class TermViewSet(viewsets.ModelViewSet):
     queryset = Term.objects.select_related("year")
     serializer_class = TermSerializer
     permission_classes = [ReadOnlyOrAdmin]
+
+
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    """GET /api/core/users/?role=teacher -> staff-only list of users, e.g. to pick a class teacher."""
+
+    serializer_class = UserSerializer
+    permission_classes = [IsStaff]
+
+    def get_queryset(self):
+        qs = User.objects.filter(is_active=True).order_by("last_name", "first_name", "username")
+        if self.request.query_params.get("role"):
+            qs = qs.filter(role=self.request.query_params["role"])
+        return qs
