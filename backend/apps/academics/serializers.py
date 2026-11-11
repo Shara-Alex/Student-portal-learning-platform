@@ -13,7 +13,7 @@ def current_year():
 class SubjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subject
-        fields = ["id", "name", "code"]
+        fields = ["id", "name", "code", "group"]
 
 
 class TeachingAssignmentSerializer(serializers.ModelSerializer):
@@ -22,6 +22,7 @@ class TeachingAssignmentSerializer(serializers.ModelSerializer):
     teacher = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(role="teacher"))
     subject_name = serializers.CharField(source="subject.name", read_only=True)
     subject_code = serializers.CharField(source="subject.code", read_only=True)
+    subject_group = serializers.CharField(source="subject.group", read_only=True)
     school_class_name = serializers.CharField(source="school_class.name", read_only=True)
     teacher_name = serializers.SerializerMethodField()
 
@@ -29,7 +30,7 @@ class TeachingAssignmentSerializer(serializers.ModelSerializer):
         model = TeachingAssignment
         fields = [
             "id", "year", "school_class", "school_class_name",
-            "subject", "subject_name", "subject_code", "teacher", "teacher_name",
+            "subject", "subject_name", "subject_code", "subject_group", "teacher", "teacher_name",
         ]
 
     def get_teacher_name(self, obj):
@@ -57,6 +58,7 @@ class PeriodSerializer(serializers.ModelSerializer):
 class TimetableEntrySerializer(serializers.ModelSerializer):
     subject_name = serializers.CharField(source="assignment.subject.name", read_only=True)
     subject_code = serializers.CharField(source="assignment.subject.code", read_only=True)
+    subject_group = serializers.CharField(source="assignment.subject.group", read_only=True)
     teacher_name = serializers.SerializerMethodField()
     school_class = serializers.IntegerField(source="assignment.school_class_id", read_only=True)
     school_class_name = serializers.CharField(source="assignment.school_class.name", read_only=True)
@@ -65,7 +67,7 @@ class TimetableEntrySerializer(serializers.ModelSerializer):
         model = TimetableEntry
         fields = [
             "id", "assignment", "day", "period", "room",
-            "subject_name", "subject_code", "teacher_name", "school_class", "school_class_name",
+            "subject_name", "subject_code", "subject_group", "teacher_name", "school_class", "school_class_name",
         ]
 
     def get_teacher_name(self, obj):

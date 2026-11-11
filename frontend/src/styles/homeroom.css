@@ -101,3 +101,84 @@ body { margin: 0; font-family: var(--font-sans); font-size: 15px; line-height: 2
 .hr-stat .d { font-size: 13px; margin-top: var(--space-1); }
 .hr-stat .up { color: var(--board); }
 .hr-stat .down { color: var(--marker); }
+
+/* ---------- School-native components ---------- */
+
+/* Subject tag + subject colour helpers */
+.hr-subj { display: inline-flex; align-items: center; height: 22px; padding: 0 var(--space-2); border-radius: var(--radius-pill); font-size: 12px; font-weight: 800; }
+.s-maths { --s: var(--subject-maths); --s-soft: var(--pen-soft); }
+.s-english { --s: var(--subject-english); --s-soft: var(--crayon-soft); }
+.s-science { --s: var(--subject-science); --s-soft: var(--teal-soft); }
+.s-humanities { --s: var(--subject-humanities); --s-soft: var(--clay-soft); }
+.s-languages { --s: var(--subject-languages); --s-soft: var(--rose-soft); }
+.s-practical { --s: var(--subject-practical); --s-soft: var(--board-soft); }
+.hr-subj { background: var(--s-soft); color: var(--s); }
+
+/* Term progress */
+.hr-term { display: flex; align-items: center; gap: var(--space-3); font-size: 13px; color: var(--ink-muted); }
+.hr-term b { color: var(--ink); }
+.hr-term .bar { flex: 1; height: 6px; border-radius: var(--radius-pill); background: var(--surface-sunken); overflow: hidden; min-width: 120px; }
+.hr-term .bar i { display: block; height: 100%; background: var(--bus); border-radius: var(--radius-pill); }
+
+/* Today: the day as a strip of periods */
+.hr-day { display: flex; gap: var(--space-2); overflow-x: auto; }
+.hr-period { flex: 1 0 110px; border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); background: var(--s-soft); border: 2px solid transparent; }
+.hr-period .t { font-family: var(--font-mono); font-size: 12px; color: var(--ink-muted); }
+.hr-period .n { font-weight: 800; color: var(--s); }
+.hr-period .c { font-size: 13px; color: var(--ink); }
+.hr-period.past { opacity: .55; }
+.hr-period.now { border-color: var(--s); box-shadow: var(--shadow-lift); }
+.hr-period.now .t::after { content: " · NOW"; color: var(--s); font-weight: 600; }
+.hr-period.break { background: transparent; border: 1px dashed var(--line); flex-basis: 64px; flex-grow: 0; }
+.hr-period.break .n { color: var(--ink-muted); font-weight: 700; }
+.hr-todo { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-md); }
+.hr-todo .what { flex: 1; }
+.hr-todo .what b { display: block; }
+.hr-todo .what span { font-size: 13px; color: var(--ink-muted); }
+.hr-todo.done .what b { text-decoration: line-through; color: var(--ink-muted); }
+.hr-tick { font-family: var(--font-hand); font-size: 26px; line-height: 1; color: var(--marker); }
+
+/* Register grid: tap to cycle P / L / A */
+.hr-register { background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; }
+.hr-register .r { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-4); border-bottom: 1px solid var(--line); }
+.hr-register .r:last-child { border-bottom: 0; }
+.hr-register .nm { flex: 1; font-weight: 700; }
+.hr-pla { display: inline-flex; gap: var(--space-1); }
+.hr-pla button { font: inherit; font-weight: 800; width: 44px; height: 44px; border-radius: var(--radius-md); border: 1px solid var(--line-strong); background: var(--surface-raised); color: var(--ink-muted); cursor: pointer; }
+.hr-pla button[aria-pressed="true"].p { background: var(--board); border-color: var(--board); color: var(--on-board); }
+.hr-pla button[aria-pressed="true"].l { background: var(--bus); border-color: var(--bus); color: var(--on-bus); }
+.hr-pla button[aria-pressed="true"].a { background: var(--marker); border-color: var(--marker); color: var(--on-marker); }
+.hr-register .sum { display: flex; gap: var(--space-4); padding: var(--space-3) var(--space-4); background: var(--surface-sunken); font-size: 13px; color: var(--ink-muted); }
+.hr-register .sum b { color: var(--ink); font-family: var(--font-mono); }
+
+/* Markbook: students × assessments */
+.hr-markbook { border-collapse: separate; border-spacing: 0; background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; }
+.hr-markbook th { font-size: 12px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-muted); background: var(--surface-sunken);
+  padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+.hr-markbook th:first-child, .hr-markbook td:first-child { text-align: left; font-weight: 700; }
+.hr-markbook th small { display: block; font-weight: 600; letter-spacing: 0; text-transform: none; }
+.hr-markbook td { padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--line); border-left: 1px solid var(--line); font-family: var(--font-mono); text-align: right; }
+.hr-markbook td:first-child { font-family: var(--font-sans); border-left: 0; }
+.hr-markbook tr:last-child td { border-bottom: 0; }
+.hr-markbook td.fail { color: var(--marker); font-weight: 600; }
+.hr-markbook td.missing { color: var(--bus-ink); background: var(--bus-soft); }
+.hr-markbook td.avg { background: var(--surface-sunken); font-weight: 600; }
+.hr-markbook td.edit { outline: 2px solid var(--focus-ring); outline-offset: -2px; background: var(--pen-soft); }
+
+/* Timetable: week grid */
+.hr-tt { display: grid; grid-template-columns: 56px repeat(5, 1fr); gap: var(--space-1); }
+.hr-tt .h { font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); text-align: center; padding: var(--space-1); }
+.hr-tt .h.today { color: var(--on-bus); background: var(--bus); border-radius: var(--radius-pill); }
+.hr-tt .tm { font-family: var(--font-mono); font-size: 12px; color: var(--ink-muted); padding-top: var(--space-2); }
+.hr-tt .slot { background: var(--s-soft); border-radius: var(--radius-sm); padding: var(--space-1) var(--space-2); min-height: 40px; }
+.hr-tt .slot b { display: block; font-size: 13px; color: var(--s); }
+.hr-tt .slot span { font-size: 12px; color: var(--ink-muted); }
+.hr-tt .free { border: 1px dashed var(--line); border-radius: var(--radius-sm); min-height: 40px; }
+
+/* Report comment */
+.hr-report { background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-md); padding: var(--space-4); display: grid; grid-template-columns: 1fr auto; gap: var(--space-2) var(--space-4); }
+.hr-report .subj { display: flex; align-items: center; gap: var(--space-2); font-weight: 800; }
+.hr-report .grade { font-family: var(--font-mono); font-size: 28px; line-height: 34px; font-weight: 600; text-align: right; grid-row: span 2; }
+.hr-report .comment { font-family: var(--font-hand); font-size: 20px; line-height: 24px; font-weight: 600; color: var(--pen);
+  background-image: linear-gradient(transparent 23px, var(--line) 23px); background-size: 100% 24px; }
+.hr-report .by { font-size: 13px; color: var(--ink-muted); grid-column: 1 / -1; }

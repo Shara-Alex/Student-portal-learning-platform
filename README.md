@@ -35,7 +35,7 @@ Debugging a feature means opening exactly two folders.
 | 1  | core            | ✅ base | School settings, users & roles, academic years, terms, login |
 | 2  | students        | ✅      | Students, guardians, classes, enrolment, medical info, year-end promotion |
 | 3  | academics       | ✅      | Subjects, teacher assignments, periods, timetable, teacher's own timetable |
-| 4  | assessments     | —       | Tests, marking schemes, marks, grading scales, weighted results, report cards, transcript |
+| 4  | assessments     | ✅      | Markbook, question paper and marking scheme uploads, grading scale, weighted results, teacher comments, report cards, transcript |
 | 5  | attendance      | —       | Daily / per-lesson attendance                           |
 | 6  | fees            | —       | Fee structures, payment plans, late fees, invoices, payments, balances |
 | 7  | events          | —       | Calendar, announcements on the dashboard                |
@@ -83,7 +83,8 @@ cd backend
 cp .env.example .env
 pip install -r requirements.txt
 python manage.py migrate
-python manage.py createsuperuser        # role defaults to student; set role=admin in /admin
+python manage.py seed_demo               # optional: a small made-up school to try things with (prints the logins)
+python manage.py createsuperuser        # or start empty: role defaults to student; set role=admin in /admin
 python manage.py runserver              # http://localhost:8000  (API + /admin)
 
 # frontend (second terminal)

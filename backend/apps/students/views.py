@@ -23,7 +23,7 @@ class SchoolClassViewSet(ProtectedDeleteMixin, viewsets.ModelViewSet):
     serializer_class = SchoolClassSerializer
     permission_classes = [ReadOnlyOrAdmin]
     pagination_class = None  # a school has few classes; the frontend wants them all for dropdowns
-    protected_message = "This class has students enrolled in it, so it cannot be deleted."
+    protected_message = "This class has students or assessments recorded against it, so it cannot be deleted."
 
     def get_queryset(self):
         return SchoolClass.objects.select_related("class_teacher").annotate(

@@ -15,8 +15,19 @@ from apps.students.models import SchoolClass
 
 
 class Subject(TimeStamped):
+    class Group(models.TextChoices):
+        """Six groups, each with its own colour on the timetable, markbook and reports."""
+
+        MATHS = "maths", "Mathematics"
+        ENGLISH = "english", "English and literature"
+        SCIENCE = "science", "Sciences"
+        HUMANITIES = "humanities", "Humanities"
+        LANGUAGES = "languages", "Languages"
+        PRACTICAL = "practical", "Practical, PE, agriculture"
+
     name = models.CharField(max_length=100, unique=True)
     code = models.CharField(max_length=20, unique=True)  # short label for the timetable, e.g. "MATH"
+    group = models.CharField(max_length=20, choices=Group.choices, default=Group.PRACTICAL)
 
     class Meta:
         ordering = ["name"]

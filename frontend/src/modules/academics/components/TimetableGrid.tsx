@@ -59,9 +59,9 @@ export function TimetableGrid({ periods, entries, detail, onCell, highlightDay }
                       )}
                     >
                       {entry ? (
-                        // Crayon purple is Homeroom's colour for subject tags.
-                        <div className="h-full rounded-sm bg-crayon-soft px-2 py-1">
-                          <p className="truncate font-bold text-crayon">{entry.subject_name}</p>
+                        // s-<group> sets --s and --s-soft: every subject keeps its own colour everywhere.
+                        <div className={`s-${entry.subject_group} h-full rounded-sm bg-(--s-soft) px-2 py-1`}>
+                          <p className="truncate font-bold text-(--s)">{entry.subject_name}</p>
                           <p className="truncate text-sm text-ink-muted">{detail(entry)}{entry.room && ` · ${entry.room}`}</p>
                         </div>
                       ) : (

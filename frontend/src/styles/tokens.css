@@ -7,6 +7,7 @@
 :root {
   --font-sans: "Nunito", "Nunito Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-hand: "Caveat", "Segoe Print", cursive;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -17,6 +18,14 @@
   --radius-md: 10px;
   --radius-lg: 18px;
   --radius-pill: 999px;
+
+  /* Subject groups point at a colour above, so a school can remap a group in one place. */
+  --subject-maths: var(--pen);
+  --subject-english: var(--crayon);
+  --subject-science: var(--teal);
+  --subject-humanities: var(--clay);
+  --subject-languages: var(--rose);
+  --subject-practical: var(--board);
 
   /* Paper (light) */
   --surface: #fbf8f1;
@@ -40,6 +49,12 @@
   --pen-soft: #e1eaf8;
   --crayon: #7a4fb0;
   --crayon-soft: #eee5f8;
+  --teal: #0f6e72;
+  --teal-soft: #dcf0ef;
+  --clay: #9a4a12;
+  --clay-soft: #f8e6d6;
+  --rose: #a8336b;
+  --rose-soft: #f7e0ea;
   --focus-ring: #2a5aa8;
   --shadow-card: 0 1px 2px rgba(29,41,37,0.08), 0 0 0 1px rgba(29,41,37,0.04);
   --shadow-lift: 0 6px 18px rgba(29,41,37,0.12);
@@ -67,6 +82,12 @@
   --pen-soft: #1d2b45;
   --crayon: #c3a4ec;
   --crayon-soft: #2e2340;
+  --teal: #6fd0cf;
+  --teal-soft: #173a3b;
+  --clay: #f0a46a;
+  --clay-soft: #3d2717;
+  --rose: #f08cbc;
+  --rose-soft: #3d1a2b;
   --focus-ring: #8db1f0;
   --shadow-card: 0 1px 2px rgba(0,0,0,0.4);
   --shadow-lift: 0 6px 18px rgba(0,0,0,0.5);

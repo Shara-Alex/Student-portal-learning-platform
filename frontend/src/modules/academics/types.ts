@@ -1,8 +1,20 @@
 // Mirrors backend/apps/academics/serializers.py. Keep them in sync.
+/** Six subject groups. Each has one colour, the same on the timetable, markbook and reports. */
+export type SubjectGroup = "maths" | "english" | "science" | "humanities" | "languages" | "practical";
+export const SUBJECT_GROUPS: { value: SubjectGroup; label: string }[] = [
+  { value: "maths", label: "Mathematics" },
+  { value: "english", label: "English and literature" },
+  { value: "science", label: "Sciences" },
+  { value: "humanities", label: "Humanities" },
+  { value: "languages", label: "Languages" },
+  { value: "practical", label: "Practical, PE, agriculture" },
+];
+
 export interface Subject {
   id: number;
   name: string;
   code: string;
+  group: SubjectGroup;
 }
 
 /** "This teacher teaches this subject to this class this year." */
@@ -14,6 +26,7 @@ export interface TeachingAssignment {
   subject: number;
   subject_name: string;
   subject_code: string;
+  subject_group: SubjectGroup;
   teacher: number;
   teacher_name: string;
 }
@@ -35,6 +48,7 @@ export interface TimetableEntry {
   room: string;
   subject_name: string;
   subject_code: string;
+  subject_group: SubjectGroup;
   teacher_name: string;
   school_class: number;
   school_class_name: string;

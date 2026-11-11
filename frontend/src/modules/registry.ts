@@ -5,10 +5,12 @@
  */
 import type { Section } from "@/lib/sections";
 import type { LucideIcon } from "lucide-react";
-import { BookOpen, Users } from "lucide-react";
+import { BookOpen, ClipboardList, Users } from "lucide-react";
 import type { ComponentType } from "react";
 import { AcademicsPage } from "./academics/AcademicsPage";
 import { sections as academicsSections } from "./academics/sections";
+import { AssessmentsPage } from "./assessments/AssessmentsPage";
+import { sections as assessmentsSections } from "./assessments/sections";
 import type { Role } from "./core/types";
 import { sections as studentsSections } from "./students/sections";
 import { StudentsPage } from "./students/StudentsPage";
@@ -28,4 +30,5 @@ export interface Module {
 export const modules: Module[] = [
   { name: "students", label: "Students", icon: Users, color: "board", page: StudentsPage, roles: ["admin", "teacher"], sections: studentsSections },
   { name: "academics", label: "Academics", icon: BookOpen, color: "pen", page: AcademicsPage, roles: ["admin", "teacher"], sections: academicsSections },
+  { name: "assessments", label: "Gradebook", icon: ClipboardList, color: "crayon", page: AssessmentsPage, roles: ["admin", "teacher"], sections: assessmentsSections },
 ];

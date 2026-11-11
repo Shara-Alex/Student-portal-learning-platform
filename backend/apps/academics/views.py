@@ -45,12 +45,13 @@ class SubjectViewSet(ProtectedDeleteMixin, viewsets.ModelViewSet):
     protected_message = "This subject is being taught to a class, so it cannot be deleted."
 
 
-class TeachingAssignmentViewSet(viewsets.ModelViewSet):
+class TeachingAssignmentViewSet(ProtectedDeleteMixin, viewsets.ModelViewSet):
     """/api/academics/assignments/?school_class=&teacher=&year="""
 
     serializer_class = TeachingAssignmentSerializer
     permission_classes = [ReadOnlyOrAdmin]
     pagination_class = None
+    protected_message = "Assessments have been set for this class and subject, so it cannot be removed."
 
     def get_queryset(self):
         qs = TeachingAssignment.objects.select_related("subject", "school_class", "teacher")

@@ -41,7 +41,7 @@ export function TopBar() {
   const icon = "rounded-sm p-2 hover:bg-sunken hover:text-ink";
 
   return (
-    <header className="hr-topbar sticky top-0 z-40">
+    <header className="hr-topbar sticky top-0 z-40 print:hidden">
       <Link to="/" className="app text-ink no-underline" title="Home: all apps">
         <span className="dot">{current ? <current.icon size={15} /> : <GraduationCap size={15} />}</span>
         {current?.label ?? school.data?.name ?? "School"}

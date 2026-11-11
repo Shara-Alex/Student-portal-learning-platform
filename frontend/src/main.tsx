@@ -8,6 +8,7 @@ import "@fontsource/nunito/700.css";
 import "@fontsource/nunito/800.css";
 import "@fontsource/jetbrains-mono/500.css";
 import "@fontsource/jetbrains-mono/600.css";
+import "@fontsource/caveat/600.css"; // handwriting: report card comments only
 import "./index.css";
 import { theme } from "./lib/theme";
 

@@ -5,7 +5,8 @@ from .models import Period, Subject, TeachingAssignment, TimetableEntry
 
 @admin.register(Subject)
 class SubjectAdmin(admin.ModelAdmin):
-    list_display = ("name", "code")
+    list_display = ("name", "code", "group")
+    list_filter = ("group",)
     search_fields = ("name", "code")
 
 

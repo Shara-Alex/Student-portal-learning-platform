@@ -25,23 +25,46 @@ async function refreshAccessToken(): Promise<boolean> {
   return true;
 }
 
-async function request<T>(method: string, url: string, body?: unknown, retry = true): Promise<T> {
+/** Sends one call with the login token attached, and gives back the raw answer. */
+async function send(method: string, url: string, body?: unknown, retry = true): Promise<Response> {
   const headers: Record<string, string> = {};
-  if (body !== undefined) headers["Content-Type"] = "application/json";
+  // A FormData body carries files. The browser must set its own Content-Type for it, so we leave it alone.
+  const isForm = body instanceof FormData;
+  if (body !== undefined && !isForm) headers["Content-Type"] = "application/json";
   const token = auth.getAccess();
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch(url, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
+  const payload = body === undefined ? undefined : isForm ? body : JSON.stringify(body);
+  const res = await fetch(url, { method, headers, body: payload });
 
   // Access token expired -> refresh once and retry the same call.
   if (res.status === 401 && retry && (await refreshAccessToken())) {
-    return request<T>(method, url, body, false);
+    return send(method, url, body, false);
   }
   if (res.status === 401) auth.clear();
+  return res;
+}
 
+async function request<T>(method: string, url: string, body?: unknown): Promise<T> {
+  const res = await send(method, url, body);
   const data = res.status === 204 ? null : await res.json().catch(() => null);
   if (!res.ok) throw new ApiError(res.status, data);
   return data as T;
+}
+
+/**
+ * Download a protected file. A plain link cannot send the login token, so we
+ * fetch the file ourselves, then hand it to the browser as a download.
+ */
+async function download(url: string, fallbackName = "download") {
+  const res = await send("GET", url);
+  if (!res.ok) throw new ApiError(res.status, await res.json().catch(() => null));
+  const named = /filename="?([^";]+)"?/.exec(res.headers.get("Content-Disposition") ?? "");
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(await res.blob());
+  link.download = named?.[1] ?? fallbackName;
+  link.click();
+  URL.revokeObjectURL(link.href);
 }
 
 /** The shape Django REST Framework returns for paginated lists. */
@@ -56,6 +79,8 @@ export interface Paginated<T> {
 export function errorText(e: unknown): string {
   if (!(e instanceof ApiError)) return "Something went wrong. Please try again.";
   if (e.status === 403) return "You do not have permission to do that.";
+  // The server sometimes answers with a plain list of messages: ["A score cannot be more than 50."]
+  if (Array.isArray(e.data)) return e.data.join(" ");
   if (e.data && typeof e.data === "object") {
     return Object.entries(e.data as Record<string, unknown>)
       .map(([field, msg]) => {
@@ -73,4 +98,5 @@ export const api = {
   put: <T>(url: string, body?: unknown) => request<T>("PUT", url, body),
   patch: <T>(url: string, body?: unknown) => request<T>("PATCH", url, body),
   delete: <T>(url: string) => request<T>("DELETE", url),
+  download,
 };

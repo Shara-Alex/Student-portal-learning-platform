@@ -32,9 +32,16 @@
   --color-pen-soft: var(--pen-soft);
   --color-crayon: var(--crayon);
   --color-crayon-soft: var(--crayon-soft);
+  --color-teal: var(--teal);
+  --color-teal-soft: var(--teal-soft);
+  --color-clay: var(--clay);
+  --color-clay-soft: var(--clay-soft);
+  --color-rose: var(--rose);
+  --color-rose-soft: var(--rose-soft);
 
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
+  --font-hand: var(--font-hand);
 
   --radius-sm: 6px;
   --radius-md: 10px;
