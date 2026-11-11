@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AppShell } from "./layout/AppShell";
+import { HomePage } from "./modules/core/HomePage";
 import { LoginPage } from "./modules/core/LoginPage";
 import { modules } from "./modules/registry";
 
@@ -13,6 +14,7 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route element={<AppShell />}>
+            <Route path="/" element={<HomePage />} />
             {modules.map((m) => (
               <Route key={m.name} path={`/${m.name}`} element={<m.page />} />
             ))}

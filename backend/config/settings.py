@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     # our modules (one app per feature, added as we build them)
     "apps.core",
     "apps.students",
+    "apps.academics",
 ]
 
 MIDDLEWARE = [
@@ -111,8 +112,7 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": 50,
+    "DEFAULT_PAGINATION_CLASS": "apps.core.pagination.StandardPagination",
 }
 
 from datetime import timedelta  # noqa: E402

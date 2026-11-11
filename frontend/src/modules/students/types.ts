@@ -23,6 +23,7 @@ export interface Guardian {
 
 export type Gender = "M" | "F";
 export type StudentStatus = "active" | "left" | "graduated";
+export const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
 
 export interface Student {
   id: number;
@@ -35,6 +36,9 @@ export interface Student {
   admission_date: string;
   status: StudentStatus;
   address: string;
+  blood_group: string;            // "" when not recorded
+  allergies: string;
+  medical_notes: string;
   guardians: number[];            // ids (this is what we send back when saving)
   guardian_details: Guardian[];   // full records, read-only
   current_class: number | null;
@@ -47,3 +51,11 @@ export type StudentInput = Omit<Student, "id" | "full_name" | "guardian_details"
 };
 export type GuardianInput = Omit<Guardian, "id" | "full_name">;
 export type SchoolClassInput = Pick<SchoolClass, "name" | "level" | "class_teacher">;
+
+/** Year-end promotion of one class. to_class = null means "leaving school" (graduated). */
+export interface PromoteInput {
+  from_class: number;
+  to_year: number;
+  to_class: number | null;
+  students: number[];
+}

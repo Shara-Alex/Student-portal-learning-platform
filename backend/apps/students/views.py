@@ -1,34 +1,34 @@
-from django.db.models import Count, Prefetch, ProtectedError, Q
-from rest_framework import status, viewsets
+from django.db.models import Count, Prefetch, Q
+from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 
+from apps.core.mixins import ProtectedDeleteMixin
 from apps.core.permissions import ReadOnlyOrAdmin, StaffReadAdminWrite
 
 from .models import Enrolment, Guardian, SchoolClass, Student
-from .serializers import EnrolmentSerializer, GuardianSerializer, SchoolClassSerializer, StudentSerializer
+from .serializers import (
+    EnrolmentSerializer,
+    GuardianSerializer,
+    PromoteSerializer,
+    SchoolClassSerializer,
+    StudentSerializer,
+)
 
 
-class SchoolClassViewSet(viewsets.ModelViewSet):
+class SchoolClassViewSet(ProtectedDeleteMixin, viewsets.ModelViewSet):
     """/api/students/classes/  Everyone can read the class list; only admins change it."""
 
     serializer_class = SchoolClassSerializer
     permission_classes = [ReadOnlyOrAdmin]
     pagination_class = None  # a school has few classes; the frontend wants them all for dropdowns
+    protected_message = "This class has students enrolled in it, so it cannot be deleted."
 
     def get_queryset(self):
         return SchoolClass.objects.select_related("class_teacher").annotate(
             student_count=Count("enrolments", filter=Q(enrolments__year__is_current=True))
         )
-
-    def destroy(self, request, *args, **kwargs):
-        try:
-            return super().destroy(request, *args, **kwargs)
-        except ProtectedError:
-            return Response(
-                {"detail": "This class has students enrolled in it, so it cannot be deleted."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
 
 
 class GuardianViewSet(viewsets.ModelViewSet):
@@ -87,3 +87,10 @@ class EnrolmentViewSet(viewsets.ModelViewSet):
         if self.request.query_params.get("student"):
             qs = qs.filter(student_id=self.request.query_params["student"])
         return qs
+
+    @action(detail=False, methods=["post"])
+    def promote(self, request):
+        """POST /api/students/enrolments/promote/  Year-end promotion of one class (admin only)."""
+        serializer = PromoteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.save())

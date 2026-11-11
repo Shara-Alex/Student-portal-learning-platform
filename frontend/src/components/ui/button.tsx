@@ -1,17 +1,23 @@
 import { cn } from "@/lib/utils";
 import type { ButtonHTMLAttributes } from "react";
 
-type Props = ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "ghost" | "danger" };
+/**
+ * Homeroom buttons.
+ *   primary  the one green action a screen is for (Save, Add student)
+ *   default  secondary actions (Cancel, Print)
+ *   ghost    low-weight actions inside lists and cards (Edit)
+ *   danger   destructive actions (Clear, Delete)
+ */
+type Props = ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "default" | "ghost" | "danger" };
 
 export function Button({ className, variant = "primary", ...props }: Props) {
   return (
     <button
       className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition",
-        "disabled:cursor-not-allowed disabled:opacity-50",
-        variant === "primary" && "bg-brand text-white hover:bg-brand-dark",
-        variant === "ghost" && "text-slate-700 hover:bg-slate-100",
-        variant === "danger" && "bg-red-600 text-white hover:bg-red-700",
+        "hr-btn justify-center whitespace-nowrap",
+        variant === "primary" && "hr-btn-primary",
+        variant === "ghost" && "hr-btn-ghost",
+        variant === "danger" && "hr-btn-danger",
         className,
       )}
       {...props}

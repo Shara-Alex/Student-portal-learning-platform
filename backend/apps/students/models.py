@@ -80,6 +80,16 @@ class Student(TimeStamped):
         LEFT = "left", "Left"
         GRADUATED = "graduated", "Graduated"
 
+    class BloodGroup(models.TextChoices):
+        A_POS = "A+", "A+"
+        A_NEG = "A-", "A-"
+        B_POS = "B+", "B+"
+        B_NEG = "B-", "B-"
+        AB_POS = "AB+", "AB+"
+        AB_NEG = "AB-", "AB-"
+        O_POS = "O+", "O+"
+        O_NEG = "O-", "O-"
+
     admission_number = models.CharField(max_length=30, unique=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
@@ -88,6 +98,10 @@ class Student(TimeStamped):
     admission_date = models.DateField(default=timezone.localdate)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.ACTIVE)
     address = models.TextField(blank=True)
+    # Medical info: what staff need to know in an emergency.
+    blood_group = models.CharField(max_length=3, choices=BloodGroup.choices, blank=True)
+    allergies = models.TextField(blank=True)
+    medical_notes = models.TextField(blank=True, help_text="Known conditions, medication, anything staff must know.")
     guardians = models.ManyToManyField(Guardian, related_name="students", blank=True)
     # The student's own portal login (a User with role=student). Empty until they are given one.
     user = models.OneToOneField(

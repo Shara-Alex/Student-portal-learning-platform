@@ -45,6 +45,7 @@ class StudentSerializer(serializers.ModelSerializer):
         fields = [
             "id", "admission_number", "first_name", "last_name", "full_name", "gender",
             "date_of_birth", "admission_date", "status", "address",
+            "blood_group", "allergies", "medical_notes",
             "guardians", "guardian_details",
             "school_class", "current_class", "current_class_name",
         ]
@@ -104,3 +105,50 @@ class EnrolmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Enrolment
         fields = ["id", "student", "school_class", "school_class_name", "year", "year_name"]
+
+
+class PromoteSerializer(serializers.Serializer):
+    """
+    Year-end promotion: move the students of one class into next year.
+
+    from_class  the class they are in now (current academic year)
+    to_year     the academic year they are moving into
+    to_class    their class in that year, or null = they are leaving (mark as graduated)
+    students    optional list of ids; leave out to move every active student in the class
+    """
+
+    from_class = serializers.PrimaryKeyRelatedField(queryset=SchoolClass.objects.all())
+    to_year = serializers.PrimaryKeyRelatedField(queryset=AcademicYear.objects.all())
+    to_class = serializers.PrimaryKeyRelatedField(queryset=SchoolClass.objects.all(), allow_null=True)
+    students = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), many=True, required=False)
+
+    def validate(self, data):
+        current = AcademicYear.objects.filter(is_current=True).first()
+        if current is None:
+            raise serializers.ValidationError("Mark an academic year as current first.")
+        if data["to_year"] == current:
+            raise serializers.ValidationError({"to_year": "Choose a different year from the current one."})
+        data["from_year"] = current
+        return data
+
+    @transaction.atomic
+    def save(self):
+        data = self.validated_data
+        students = Student.objects.filter(
+            status=Student.Status.ACTIVE,
+            enrolments__school_class=data["from_class"],
+            enrolments__year=data["from_year"],
+        )
+        if "students" in data:
+            students = students.filter(pk__in=[s.pk for s in data["students"]])
+
+        result = {"promoted": 0, "graduated": 0}
+        for student in students:
+            if data["to_class"] is None:
+                student.status = Student.Status.GRADUATED
+                student.save(update_fields=["status", "updated_at"])
+                result["graduated"] += 1
+            else:
+                student.enrol(data["to_class"], data["to_year"])
+                result["promoted"] += 1
+        return result

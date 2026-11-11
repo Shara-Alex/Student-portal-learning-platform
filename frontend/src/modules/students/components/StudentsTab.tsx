@@ -1,5 +1,7 @@
+import { Badge, type Tone } from "@/components/ui/badge";
+import { Avatar } from "@/components/ui/avatar";
+import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
@@ -9,11 +11,8 @@ import { useClasses, useStudents } from "../api";
 import type { Student } from "../types";
 import { StudentForm } from "./StudentForm";
 
-const statusStyle: Record<Student["status"], string> = {
-  active: "bg-green-100 text-green-700",
-  left: "bg-slate-100 text-slate-600",
-  graduated: "bg-blue-100 text-blue-700",
-};
+// Homeroom's colour code: green = good, grey = inactive, blue = info.
+const statusTone: Record<Student["status"], Tone> = { active: "good", left: "neutral", graduated: "info" };
 
 export function StudentsTab({ canEdit }: { canEdit: boolean }) {
   const [search, setSearch] = useState("");
@@ -34,7 +33,10 @@ export function StudentsTab({ canEdit }: { canEdit: boolean }) {
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
+      <PageHeader title="Students">
+        {canEdit && <Button onClick={() => setEditing(null)}><Plus size={16} /> Add student</Button>}
+      </PageHeader>
       <div className="flex flex-wrap items-center gap-2">
         <Input className="max-w-xs" placeholder="Search name or admission no." value={search} onChange={(e) => filter(setSearch)(e.target.value)} />
         <Select className="w-40" value={schoolClass} onChange={(e) => filter(setSchoolClass)(e.target.value)}>
@@ -47,18 +49,17 @@ export function StudentsTab({ canEdit }: { canEdit: boolean }) {
           <option value="left">Left</option>
           <option value="graduated">Graduated</option>
         </Select>
-        {canEdit && <Button className="ml-auto" onClick={() => setEditing(null)}><Plus size={16} /> Add student</Button>}
       </div>
 
-      <Card className="overflow-x-auto p-0">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+      <div className="overflow-x-auto">
+        <table className="hr-list">
+          <thead>
             <tr>
-              <th className="px-4 py-3">Adm. no.</th>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Class</th>
-              <th className="px-4 py-3">Guardians</th>
-              <th className="px-4 py-3">Status</th>
+              <th>Adm. no.</th>
+              <th>Name</th>
+              <th>Class</th>
+              <th>Guardians</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
@@ -66,29 +67,27 @@ export function StudentsTab({ canEdit }: { canEdit: boolean }) {
               <tr
                 key={s.id}
                 onClick={canEdit ? () => setEditing(s) : undefined}
-                className={cn("border-b border-slate-100 last:border-0", canEdit && "cursor-pointer hover:bg-slate-50")}
+                className={cn(canEdit && "cursor-pointer")}
               >
-                <td className="px-4 py-3 font-mono text-xs">{s.admission_number}</td>
-                <td className="px-4 py-3 font-medium">{s.full_name}</td>
-                <td className="px-4 py-3">{s.current_class_name || <span className="text-slate-400">Not placed</span>}</td>
-                <td className="px-4 py-3 text-slate-600">{s.guardian_details.map((g) => g.full_name).join(", ") || "—"}</td>
-                <td className="px-4 py-3">
-                  <span className={cn("rounded-full px-2 py-0.5 text-xs capitalize", statusStyle[s.status])}>{s.status}</span>
-                </td>
+                <td className="font-mono">{s.admission_number}</td>
+                <td><div className="who"><Avatar name={s.full_name} />{s.full_name}</div></td>
+                <td>{s.current_class_name || <span className="text-ink-muted">Not placed</span>}</td>
+                <td className="text-ink-muted">{s.guardian_details.map((g) => g.full_name).join(", ") || "—"}</td>
+                <td><Badge tone={statusTone[s.status]}>{s.status}</Badge></td>
               </tr>
             ))}
             {!rows.length && (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-slate-500">{students.isLoading ? "Loading…" : "No students found."}</td></tr>
+              <tr><td colSpan={5} className="!py-8 text-center text-ink-muted">{students.isLoading ? "Loading…" : "No students found."}</td></tr>
             )}
           </tbody>
         </table>
-      </Card>
+      </div>
 
-      <div className="flex items-center justify-between text-sm text-slate-600">
+      <div className="flex items-center justify-between text-sm text-ink-muted">
         <span>{students.data?.count ?? 0} student(s)</span>
         <div className="flex gap-2">
-          <Button variant="ghost" disabled={!students.data?.previous} onClick={() => setPage(page - 1)}>Previous</Button>
-          <Button variant="ghost" disabled={!students.data?.next} onClick={() => setPage(page + 1)}>Next</Button>
+          <Button variant="default" disabled={!students.data?.previous} onClick={() => setPage(page - 1)}>Previous</Button>
+          <Button variant="default" disabled={!students.data?.next} onClick={() => setPage(page + 1)}>Next</Button>
         </div>
       </div>
 

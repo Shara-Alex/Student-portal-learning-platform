@@ -1,0 +1,73 @@
+/*
+ * Homeroom design tokens, generated from the design system's tokens.json.
+ * Every colour, radius, shadow and font in the app comes from here.
+ * Two themes: Paper (light, default) and Chalkboard (dark).
+ * Switch with <html data-theme="chalkboard">.
+ */
+:root {
+  --font-sans: "Nunito", "Nunito Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 18px;
+  --radius-pill: 999px;
+
+  /* Paper (light) */
+  --surface: #fbf8f1;
+  --surface-raised: #ffffff;
+  --surface-sunken: #f1ede2;
+  --line: #e2dbc9;
+  --line-strong: #8a8f7f;
+  --ink: #1d2925;
+  --ink-muted: #56625c;
+  --board: #1f5a43;
+  --board-soft: #e3efe7;
+  --on-board: #ffffff;
+  --bus: #f2b705;
+  --bus-soft: #fdf1c7;
+  --on-bus: #3d2e00;
+  --bus-ink: #7a5800;
+  --marker: #b83a2a;
+  --marker-soft: #f8e1dc;
+  --on-marker: #ffffff;
+  --pen: #2a5aa8;
+  --pen-soft: #e1eaf8;
+  --crayon: #7a4fb0;
+  --crayon-soft: #eee5f8;
+  --focus-ring: #2a5aa8;
+  --shadow-card: 0 1px 2px rgba(29,41,37,0.08), 0 0 0 1px rgba(29,41,37,0.04);
+  --shadow-lift: 0 6px 18px rgba(29,41,37,0.12);
+}
+
+[data-theme="chalkboard"] {
+  --surface: #16211d;
+  --surface-raised: #1e2c27;
+  --surface-sunken: #111a17;
+  --line: #2e3e38;
+  --line-strong: #6b7d76;
+  --ink: #eef2ec;
+  --ink-muted: #a9b5af;
+  --board: #7cc7a0;
+  --board-soft: #1f3b30;
+  --on-board: #0f1a16;
+  --bus: #f5c94a;
+  --bus-soft: #3a3114;
+  --on-bus: #2a2000;
+  --bus-ink: #f5c94a;
+  --marker: #f0846f;
+  --marker-soft: #43201b;
+  --on-marker: #1f0b07;
+  --pen: #8db1f0;
+  --pen-soft: #1d2b45;
+  --crayon: #c3a4ec;
+  --crayon-soft: #2e2340;
+  --focus-ring: #8db1f0;
+  --shadow-card: 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-lift: 0 6px 18px rgba(0,0,0,0.5);
+}

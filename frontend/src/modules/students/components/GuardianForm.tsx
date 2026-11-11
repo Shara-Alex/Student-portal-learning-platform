@@ -56,9 +56,9 @@ export function GuardianForm({ guardian, onClose, onSaved }: Props) {
         <Field label="Phone"><Input value={form.phone} onChange={set("phone")} /></Field>
         <Field label="Email"><Input type="email" value={form.email} onChange={set("email")} /></Field>
         <Field label="Address"><Input value={form.address} onChange={set("address")} /></Field>
-        {save.isError && <p className="col-span-2 text-sm text-red-600">{errorText(save.error)}</p>}
+        {save.isError && <p className="col-span-2 text-sm text-marker">{errorText(save.error)}</p>}
         <div className="col-span-2 mt-2 flex justify-end gap-2">
-          <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
+          <Button type="button" variant="default" onClick={onClose}>Cancel</Button>
           <Button disabled={save.isPending}>{save.isPending ? "Saving…" : "Save"}</Button>
         </div>
       </form>

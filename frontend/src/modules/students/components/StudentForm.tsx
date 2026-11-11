@@ -3,10 +3,11 @@ import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { errorText } from "@/lib/api";
 import { useState, type FormEvent } from "react";
 import { useClasses, useSaveStudent } from "../api";
-import type { Gender, Guardian, Student, StudentStatus } from "../types";
+import { BLOOD_GROUPS, type Gender, type Guardian, type Student, type StudentStatus } from "../types";
 import { GuardianPicker } from "./GuardianPicker";
 
 /** Add (student = null) or edit a student. */
@@ -23,6 +24,9 @@ export function StudentForm({ student, onClose }: { student: Student | null; onC
     admission_date: student?.admission_date ?? new Date().toISOString().slice(0, 10),
     status: (student?.status ?? "active") as StudentStatus,
     address: student?.address ?? "",
+    blood_group: student?.blood_group ?? "",
+    allergies: student?.allergies ?? "",
+    medical_notes: student?.medical_notes ?? "",
     school_class: student?.current_class ? String(student.current_class) : "",
   });
   const [guardians, setGuardians] = useState<Guardian[]>(student?.guardian_details ?? []);
@@ -77,6 +81,19 @@ export function StudentForm({ student, onClose }: { student: Student | null; onC
         <div className="col-span-2">
           <Field label="Home address"><Input value={form.address} onChange={set("address")} /></Field>
         </div>
+
+        {/* The dashed line is Homeroom's "ruled line" divider. */}
+        <p className="col-span-2 mt-2 border-t border-dashed border-line pt-3 text-xs font-extrabold uppercase tracking-wider text-ink-muted">Medical</p>
+        <Field label="Blood group">
+          <Select value={form.blood_group} onChange={set("blood_group")}>
+            <option value="">Not recorded</option>
+            {BLOOD_GROUPS.map((b) => <option key={b} value={b}>{b}</option>)}
+          </Select>
+        </Field>
+        <Field label="Allergies"><Input placeholder="e.g. peanuts, penicillin" value={form.allergies} onChange={set("allergies")} /></Field>
+        <div className="col-span-2">
+          <Field label="Medical notes"><Textarea placeholder="Conditions, medication, anything staff must know" value={form.medical_notes} onChange={set("medical_notes")} /></Field>
+        </div>
       </form>
 
       {/* Outside the <form> on purpose: the picker opens its own guardian form,
@@ -85,9 +102,9 @@ export function StudentForm({ student, onClose }: { student: Student | null; onC
         <GuardianPicker selected={guardians} onChange={setGuardians} />
       </div>
 
-      {save.isError && <p className="mt-3 text-sm text-red-600">{errorText(save.error)}</p>}
+      {save.isError && <p className="mt-3 text-sm text-marker">{errorText(save.error)}</p>}
       <div className="mt-5 flex justify-end gap-2">
-        <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
+        <Button type="button" variant="default" onClick={onClose}>Cancel</Button>
         {/* form="student-form" links this button to the form above even though it sits outside it. */}
         <Button form="student-form" disabled={save.isPending}>{save.isPending ? "Saving…" : "Save"}</Button>
       </div>

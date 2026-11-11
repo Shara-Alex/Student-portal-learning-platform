@@ -1,13 +1,70 @@
+/*
+ * Styling follows the Homeroom design system.
+ *   styles/tokens.css    the colours, fonts, radii and shadows (CSS variables)
+ *   styles/homeroom.css  the ready-made component classes (hr-btn, hr-list, hr-badge ...)
+ * Tailwind is used for layout only (flex, grid, gap, padding).
+ */
 @import "tailwindcss";
+@import "./styles/tokens.css";
+/* In the "components" layer so a Tailwind utility on the same element still wins, e.g. hr-input + w-48. */
+@import "./styles/homeroom.css" layer(components);
 
-/* Design tokens. Change these to re-skin the whole app. */
-@theme {
-  --color-brand: #1d4ed8;
-  --color-brand-dark: #1e3a8a;
-  --color-surface: #f8fafc;
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+/* Teach Tailwind the Homeroom names, so bg-board, text-ink-muted, rounded-md, shadow-card etc. work. */
+@theme inline {
+  --color-surface: var(--surface);
+  --color-raised: var(--surface-raised);
+  --color-sunken: var(--surface-sunken);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-board: var(--board);
+  --color-board-soft: var(--board-soft);
+  --color-on-board: var(--on-board);
+  --color-bus: var(--bus);
+  --color-bus-soft: var(--bus-soft);
+  --color-on-bus: var(--on-bus);
+  --color-bus-ink: var(--bus-ink);
+  --color-marker: var(--marker);
+  --color-marker-soft: var(--marker-soft);
+  --color-on-marker: var(--on-marker);
+  --color-pen: var(--pen);
+  --color-pen-soft: var(--pen-soft);
+  --color-crayon: var(--crayon);
+  --color-crayon-soft: var(--crayon-soft);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 18px;
+
+  --shadow-card: var(--shadow-card);
+  --shadow-lift: var(--shadow-lift);
+
+  /* Homeroom type scale: label 12, small 13, body 15, heading 18, title 24, display 32. */
+  --text-xs: 12px;
+  --text-xs--line-height: 16px;
+  --text-sm: 13px;
+  --text-sm--line-height: 18px;
+  --text-base: 15px;
+  --text-base--line-height: 22px;
+  --text-lg: 18px;
+  --text-lg--line-height: 26px;
+  --text-2xl: 24px;
+  --text-2xl--line-height: 32px;
+  --text-3xl: 32px;
+  --text-3xl--line-height: 40px;
 }
 
-body {
-  @apply bg-surface text-slate-800 antialiased;
+@layer base {
+  body {
+    -webkit-font-smoothing: antialiased;
+  }
+  /* Tick boxes and radio buttons take the brand green. */
+  input[type="checkbox"],
+  input[type="radio"] {
+    accent-color: var(--board);
+  }
 }

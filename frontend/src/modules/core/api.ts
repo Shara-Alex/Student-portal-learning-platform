@@ -1,7 +1,7 @@
 import { api, type Paginated } from "@/lib/api";
 import { auth } from "@/lib/auth";
 import { useQuery } from "@tanstack/react-query";
-import type { School, Term, User } from "./types";
+import type { AcademicYear, School, Term, User } from "./types";
 
 export async function login(username: string, password: string) {
   const data = await api.post<{ access: string; refresh: string }>("/api/auth/login/", { username, password });
@@ -24,4 +24,7 @@ export const useTerms = () =>
   useQuery({ queryKey: ["terms"], queryFn: () => api.get<{ results: Term[] }>("/api/core/terms/") });
 
 export const useTeachers = () =>
-  useQuery({ queryKey: ["users", "teacher"], queryFn: () => api.get<Paginated<User>>("/api/core/users/?role=teacher") });
+  useQuery({ queryKey: ["users", "teacher"], queryFn: () => api.get<Paginated<User>>("/api/core/users/?role=teacher&page_size=500") });
+
+export const useYears = () =>
+  useQuery({ queryKey: ["years"], queryFn: () => api.get<Paginated<AcademicYear>>("/api/core/years/") });

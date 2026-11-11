@@ -32,3 +32,12 @@ export interface Term {
   end_date: string;
   is_current: boolean;
 }
+
+export interface AcademicYear {
+  id: number;
+  name: string;
+  start_date: string;
+  end_date: string;
+  is_current: boolean;
+  terms: Term[];
+}

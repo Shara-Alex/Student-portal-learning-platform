@@ -97,3 +97,40 @@ class StudentsApiTests(TestCase):
         self.assertEqual([u["username"] for u in r.data["results"]], ["teacher"])
         self.login(self.parent)
         self.assertEqual(self.client.get("/api/core/users/").status_code, 403)
+
+    def test_medical_fields_are_saved(self):
+        self.login(self.admin)
+        r = self.new_student(blood_group="O+", allergies="Peanuts")
+        self.assertEqual(r.status_code, 201, r.data)
+        self.assertEqual(r.data["blood_group"], "O+")
+        self.assertEqual(r.data["allergies"], "Peanuts")
+
+    def test_promote_class_to_next_year(self):
+        next_year = AcademicYear.objects.create(name="2027", start_date=date(2027, 1, 1), end_date=date(2027, 12, 31))
+        self.login(self.admin)
+        a = self.new_student(school_class=self.form1.id).data["id"]
+        b = self.new_student(admission_number="S002", school_class=self.form1.id).data["id"]
+        # Promote only student a; student b is repeating the year.
+        body = {"from_class": self.form1.id, "to_year": next_year.id, "to_class": self.form2.id, "students": [a]}
+        r = self.client.post("/api/students/enrolments/promote/", body, format="json")
+        self.assertEqual(r.data, {"promoted": 1, "graduated": 0})
+        self.assertTrue(Enrolment.objects.filter(student_id=a, year=next_year, school_class=self.form2).exists())
+        self.assertFalse(Enrolment.objects.filter(student_id=b, year=next_year).exists())
+        # This year's record is kept as history.
+        self.assertTrue(Enrolment.objects.filter(student_id=a, year=self.year, school_class=self.form1).exists())
+
+    def test_promote_without_class_graduates(self):
+        next_year = AcademicYear.objects.create(name="2027", start_date=date(2027, 1, 1), end_date=date(2027, 12, 31))
+        self.login(self.admin)
+        a = self.new_student(school_class=self.form2.id).data["id"]
+        body = {"from_class": self.form2.id, "to_year": next_year.id, "to_class": None}
+        r = self.client.post("/api/students/enrolments/promote/", body, format="json")
+        self.assertEqual(r.data, {"promoted": 0, "graduated": 1})
+        self.assertEqual(Student.objects.get(pk=a).status, "graduated")
+
+    def test_promote_rules(self):
+        self.login(self.admin)
+        body = {"from_class": self.form1.id, "to_year": self.year.id, "to_class": self.form2.id}
+        self.assertEqual(self.client.post("/api/students/enrolments/promote/", body, format="json").status_code, 400)
+        self.login(self.teacher)
+        self.assertEqual(self.client.post("/api/students/enrolments/promote/", body, format="json").status_code, 403)

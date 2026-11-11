@@ -1,0 +1,103 @@
+/*
+ * Homeroom component styles, copied from the design system's components/bundle.css.
+ * Every value is a token from tokens.css. Class names start with hr-.
+ * (The Google Fonts import was removed: fonts are bundled with the app instead, see main.tsx.)
+ */
+
+body { margin: 0; font-family: var(--font-sans); font-size: 15px; line-height: 22px; background: var(--surface); color: var(--ink); }
+.hr-row { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; padding: var(--space-4); }
+.hr-stack { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }
+:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
+/* Button */
+.hr-btn { font: inherit; font-weight: 700; height: 36px; padding: 0 var(--space-3); display: inline-flex; align-items: center; gap: var(--space-2);
+  border-radius: var(--radius-md); border: 1px solid var(--line-strong); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+.hr-btn:hover { background: var(--surface-sunken); }
+.hr-btn-primary { background: var(--board); border-color: var(--board); color: var(--on-board); }
+.hr-btn-primary:hover { background: var(--board); filter: brightness(1.08); }
+.hr-btn-danger { background: var(--marker); border-color: var(--marker); color: var(--on-marker); }
+.hr-btn-ghost { border-color: transparent; background: transparent; color: var(--board); }
+.hr-btn-ghost:hover { background: var(--board-soft); }
+.hr-btn[disabled] { opacity: .45; cursor: not-allowed; }
+
+/* Badge */
+.hr-badge { display: inline-flex; align-items: center; gap: var(--space-1); height: 22px; padding: 0 var(--space-2); border-radius: var(--radius-pill);
+  font-size: 12px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; background: var(--surface-sunken); color: var(--ink-muted); }
+.hr-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.hr-badge-good { background: var(--board-soft); color: var(--board); }
+.hr-badge-wait { background: var(--bus-soft); color: var(--bus-ink); }
+.hr-badge-bad { background: var(--marker-soft); color: var(--marker); }
+.hr-badge-info { background: var(--pen-soft); color: var(--pen); }
+
+/* Statusbar (Odoo's stage bar, flattened into pills) */
+.hr-status { display: inline-flex; gap: var(--space-1); padding: var(--space-1); border-radius: var(--radius-pill); background: var(--surface-sunken); }
+.hr-status span { padding: var(--space-1) var(--space-3); border-radius: var(--radius-pill); font-size: 13px; font-weight: 700; color: var(--ink-muted); }
+.hr-status .done { color: var(--board); }
+.hr-status .done::before { content: "✓ "; }
+.hr-status .current { background: var(--board); color: var(--on-board); }
+
+/* Top bar */
+.hr-topbar { display: flex; align-items: center; gap: var(--space-6); height: 52px; padding: 0 var(--space-4); background: var(--surface-raised);
+  border-bottom: 1px solid var(--line); box-shadow: inset 0 3px 0 var(--bus); }
+.hr-topbar .app { display: flex; align-items: center; gap: var(--space-2); font-weight: 800; font-size: 17px; }
+.hr-topbar .dot { width: 26px; height: 26px; border-radius: var(--radius-sm); background: var(--board); color: var(--on-board); display: grid; place-items: center; font-size: 13px; }
+.hr-topbar nav { display: flex; gap: var(--space-1); }
+.hr-topbar nav a { padding: var(--space-1) var(--space-3); border-radius: var(--radius-pill); color: var(--ink-muted); font-weight: 700; text-decoration: none; }
+.hr-topbar nav a:hover { background: var(--surface-sunken); color: var(--ink); }
+.hr-topbar nav a.on { background: var(--board-soft); color: var(--board); }
+.hr-topbar .me { margin-left: auto; display: flex; align-items: center; gap: var(--space-2); color: var(--ink-muted); font-size: 13px; }
+
+/* Avatar */
+.hr-avatar { width: 32px; height: 32px; border-radius: var(--radius-pill); display: inline-grid; place-items: center; font-size: 12px; font-weight: 800;
+  background: var(--board-soft); color: var(--board); flex: none; }
+
+/* App tile (Odoo home menu) */
+.hr-apps { display: grid; grid-template-columns: repeat(auto-fill, 112px); gap: var(--space-4); padding: var(--space-6); }
+.hr-app { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); text-decoration: none; color: var(--ink); font-weight: 700; font-size: 14px; }
+.hr-app i { width: 64px; height: 64px; border-radius: var(--radius-lg); display: grid; place-items: center; font-style: normal; font-size: 26px; font-weight: 800;
+  box-shadow: var(--shadow-card); transition: transform .12s, box-shadow .12s; }
+.hr-app:hover i { transform: translateY(-2px); box-shadow: var(--shadow-lift); }
+.hr-app .c-board { background: var(--board); color: var(--on-board); }
+.hr-app .c-bus { background: var(--bus); color: var(--on-bus); }
+.hr-app .c-marker { background: var(--marker); color: var(--on-marker); }
+.hr-app .c-pen { background: var(--pen); color: var(--on-board); }
+.hr-app .c-crayon { background: var(--crayon); color: var(--on-board); }
+
+/* List view */
+.hr-list { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; }
+.hr-list th { text-align: left; font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted);
+  background: var(--surface-sunken); padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--line); }
+.hr-list td { padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--line); }
+.hr-list tr:last-child td { border-bottom: 0; }
+.hr-list tbody tr:hover td { background: var(--surface-sunken); }
+.hr-list .num { font-family: var(--font-mono); text-align: right; }
+.hr-list .who { display: flex; align-items: center; gap: var(--space-2); font-weight: 700; }
+
+/* Kanban card */
+.hr-kanban { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-3); padding: var(--space-4); }
+.hr-card { background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow-card); padding: var(--space-4);
+  display: flex; flex-direction: column; gap: var(--space-2); }
+.hr-card header { display: flex; align-items: center; gap: var(--space-3); }
+.hr-card h4 { margin: 0; font-size: 15px; line-height: 20px; font-weight: 800; }
+.hr-card .meta { font-size: 13px; color: var(--ink-muted); }
+.hr-card footer { display: flex; justify-content: space-between; align-items: center; padding-top: var(--space-2); border-top: 1px dashed var(--line); }
+.hr-card .mark { font-family: var(--font-mono); font-weight: 600; }
+
+/* Form field */
+.hr-field { display: grid; grid-template-columns: 140px 1fr; align-items: center; gap: var(--space-3); }
+.hr-field label { font-weight: 700; font-size: 14px; }
+.hr-input { font: inherit; height: 36px; padding: 0 var(--space-3); border-radius: var(--radius-sm); border: 1px solid var(--line-strong);
+  background: var(--surface-raised); color: var(--ink); width: 100%; box-sizing: border-box; }
+.hr-input:focus { outline: none; border-color: var(--focus-ring); box-shadow: 0 0 0 3px var(--pen-soft); }
+.hr-field.err .hr-input { border-color: var(--marker); }
+.hr-help { grid-column: 2; font-size: 13px; color: var(--ink-muted); margin-top: calc(-1 * var(--space-2)); }
+.hr-field.err .hr-help { color: var(--marker); }
+
+/* Stat */
+.hr-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-3); padding: var(--space-4); }
+.hr-stat { background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-md); padding: var(--space-4); }
+.hr-stat .k { font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); }
+.hr-stat .v { font-family: var(--font-mono); font-size: 28px; line-height: 34px; font-weight: 600; margin-top: var(--space-1); }
+.hr-stat .d { font-size: 13px; margin-top: var(--space-1); }
+.hr-stat .up { color: var(--board); }
+.hr-stat .down { color: var(--marker); }

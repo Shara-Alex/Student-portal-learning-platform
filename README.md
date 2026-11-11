@@ -24,25 +24,56 @@ frontend/src/modules/<module>/  types.ts  api.ts  <Module>Page.tsx
 
 - Backend module mounts at `/api/<module>/` (see `backend/config/urls.py`).
 - Frontend module is registered in `frontend/src/modules/registry.ts`, which
-  generates both the sidebar and the routes.
+  generates the home screen's app tiles, the top bar menu and the routes.
 
 Debugging a feature means opening exactly two folders.
 
 ## Modules (build order)
 
-| # | Module          | Status  | Covers                                                  |
-|---|-----------------|---------|---------------------------------------------------------|
-| 1 | core            | ✅ base | School settings, users & roles, academic years, terms, login |
-| 2 | students        | ✅      | Students, guardians, classes, enrolment                 |
-| 3 | academics       | —       | Subjects, teacher assignments, timetable / day planner  |
-| 4 | assessments     | —       | Tests, marking schemes, marks, weighted results, reports |
-| 5 | attendance      | —       | Daily / per-lesson attendance                           |
-| 6 | fees            | —       | Fee structures, invoices, payments, balances            |
-| 7 | events          | —       | Calendar, announcements on the dashboard                |
-| 8 | communication   | —       | Messages and notices (in-app first)                     |
-| 9 | portal          | —       | Parent / student read-only views                        |
+| #  | Module          | Status  | Covers                                                  |
+|----|-----------------|---------|---------------------------------------------------------|
+| 1  | core            | ✅ base | School settings, users & roles, academic years, terms, login |
+| 2  | students        | ✅      | Students, guardians, classes, enrolment, medical info, year-end promotion |
+| 3  | academics       | ✅      | Subjects, teacher assignments, periods, timetable, teacher's own timetable |
+| 4  | assessments     | —       | Tests, marking schemes, marks, grading scales, weighted results, report cards, transcript |
+| 5  | attendance      | —       | Daily / per-lesson attendance                           |
+| 6  | fees            | —       | Fee structures, payment plans, late fees, invoices, payments, balances |
+| 7  | events          | —       | Calendar, announcements on the dashboard                |
+| 8  | communication   | —       | Messages and notices (in-app first)                     |
+| 9  | portal          | —       | Parent / student read-only views                        |
+| 10 | admissions      | —       | Online application form, document upload, review, convert to student |
+
+### Later, as we expand
+
+Parked on purpose. Each one slots into an existing module when a school needs it.
+
+| Feature                         | Goes in        |
+|---------------------------------|----------------|
+| Homework submission by students | assessments    |
+| Lesson plans                    | academics      |
+| Discipline records              | new module     |
+| Student ID cards (barcode / QR) | students       |
+| Attendance kiosk (scan in/out)  | attendance     |
+| Online fee payments             | fees           |
+| Scholarships                    | fees           |
+| Service hours                   | new module     |
+| Staff attendance and leave      | new module     |
 
 Roles: `admin`, `teacher`, `parent`, `student` (one `User` table, `role` field).
+
+## Look and feel: the Homeroom design system
+
+The frontend follows **Homeroom** (chalkboard green, school-bus yellow, exercise-book paper).
+
+- `frontend/src/styles/tokens.css` holds every colour, font, radius and shadow, in two themes:
+  Paper (light) and Chalkboard (dark). Change a value there and the whole app follows.
+- `frontend/src/styles/homeroom.css` holds the ready-made component classes (`hr-btn`,
+  `hr-list`, `hr-badge`, `hr-topbar`, `hr-app`, `hr-stat` ...).
+- `frontend/src/components/ui/` wraps those classes as React components. Modules use these and
+  never write colours themselves.
+- Colours are a code: green = good / present / paid, yellow = waiting / late / today,
+  red = absent / overdue / destructive, blue = draft / info, purple = subject tags only.
+- One green (primary) button per screen.
 
 ## Run locally (no Docker)
 

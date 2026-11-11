@@ -1,18 +1,9 @@
 import { api, type Paginated } from "@/lib/api";
+import { query, useRemove, useSave } from "@/lib/crud";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Guardian, GuardianInput, SchoolClass, SchoolClassInput, Student, StudentInput } from "./types";
+import type { Guardian, GuardianInput, PromoteInput, SchoolClass, SchoolClassInput, Student, StudentInput } from "./types";
 
 const BASE = "/api/students";
-
-/** Build "?a=1&b=2", skipping empty values. */
-function query(params: Record<string, string | number | undefined>) {
-  const q = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== "") q.set(key, String(value));
-  }
-  const text = q.toString();
-  return text ? `?${text}` : "";
-}
 
 // ---- Reading (queries) ----------------------------------------------------
 export interface StudentFilters {
@@ -20,6 +11,7 @@ export interface StudentFilters {
   school_class?: string;
   status?: string;
   page?: number;
+  page_size?: number;
 }
 
 export const useStudents = (filters: StudentFilters) =>
@@ -41,27 +33,19 @@ export const useGuardians = (search: string, enabled = true) =>
   });
 
 // ---- Writing (mutations) --------------------------------------------------
-// One helper for "create when there is no id, otherwise update", used by all three forms.
-// After a successful save we invalidate the related lists so they refetch.
-function useSave<TInput, TResult>(path: string, refresh: string[]) {
+// useSave = create when there is no id, otherwise update. The second argument
+// lists which cached lists to refetch after a successful save.
+export const useSaveStudent = () => useSave<StudentInput, Student>(`${BASE}/students`, ["students", "classes"]);
+export const useSaveGuardian = () => useSave<GuardianInput, Guardian>(`${BASE}/guardians`, ["guardians", "students"]);
+export const useSaveClass = () => useSave<SchoolClassInput, SchoolClass>(`${BASE}/classes`, ["classes", "students"]);
+export const useDeleteGuardian = () => useRemove(`${BASE}/guardians`, ["guardians", "students"]);
+export const useDeleteClass = () => useRemove(`${BASE}/classes`, ["classes"]);
+
+export function usePromote() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id?: number; data: TInput }) =>
-      id ? api.patch<TResult>(`${BASE}/${path}/${id}/`, data) : api.post<TResult>(`${BASE}/${path}/`, data),
-    onSuccess: () => refresh.forEach((key) => client.invalidateQueries({ queryKey: [key] })),
+    mutationFn: (data: PromoteInput) =>
+      api.post<{ promoted: number; graduated: number }>(`${BASE}/enrolments/promote/`, data),
+    onSuccess: () => ["students", "classes"].forEach((key) => client.invalidateQueries({ queryKey: [key] })),
   });
 }
-
-function useRemove(path: string, refresh: string[]) {
-  const client = useQueryClient();
-  return useMutation({
-    mutationFn: (id: number) => api.delete<null>(`${BASE}/${path}/${id}/`),
-    onSuccess: () => refresh.forEach((key) => client.invalidateQueries({ queryKey: [key] })),
-  });
-}
-
-export const useSaveStudent = () => useSave<StudentInput, Student>("students", ["students", "classes"]);
-export const useSaveGuardian = () => useSave<GuardianInput, Guardian>("guardians", ["guardians", "students"]);
-export const useSaveClass = () => useSave<SchoolClassInput, SchoolClass>("classes", ["classes", "students"]);
-export const useDeleteGuardian = () => useRemove("guardians", ["guardians", "students"]);
-export const useDeleteClass = () => useRemove("classes", ["classes"]);
