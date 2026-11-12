@@ -19,6 +19,13 @@
   --radius-lg: 18px;
   --radius-pill: 999px;
 
+  /* Motion: short on purpose. Movement should confirm what happened, never make people wait. */
+  --duration-fast: 120ms;  /* leaving a page, hover colour changes */
+  --duration-base: 200ms;  /* entering a page, panels opening */
+  --duration-slow: 320ms;  /* the loading stripe finishing; nothing longer */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1); /* things arriving */
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);      /* things leaving */
+
   /* Subject groups point at a colour above, so a school can remap a group in one place. */
   --subject-maths: var(--pen);
   --subject-english: var(--crayon);

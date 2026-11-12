@@ -14,11 +14,13 @@ export interface StudentFilters {
   page_size?: number;
 }
 
-export const useStudents = (filters: StudentFilters) =>
+/** enabled = false: do not ask the server at all (for screens where only some roles need the list). */
+export const useStudents = (filters: StudentFilters, enabled = true) =>
   useQuery({
     queryKey: ["students", filters],
     queryFn: () => api.get<Paginated<Student>>(`${BASE}/students/${query({ ...filters })}`),
     placeholderData: keepPreviousData, // keep the old rows on screen while the next page loads
+    enabled,
   });
 
 export const useClasses = () =>

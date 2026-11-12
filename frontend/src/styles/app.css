@@ -1,0 +1,54 @@
+/*
+ * Our additions on top of Homeroom. homeroom.css stays an exact copy of the design's bundle;
+ * anything the design does not cover lives here, so it is easy to see where we departed from it.
+ *
+ *   1. Phones (under 600px): the sidebar becomes a menu that slides in from the left.
+ *   2. Printing: the shell steps aside so a report card prints as a plain page.
+ */
+
+/* The phone menu button and the dark layer behind the open menu only exist on phones. */
+.hr-menu-btn { display: none; }
+.hr-scrim { display: none; }
+
+/* On tablets the design shrinks the sidebar to icons by itself, so the collapse button has nothing to do. */
+@media (max-width: 899px) {
+  .hr-side .collapse-btn { display: none; }
+}
+
+/* ---------- 1. Phones ---------- */
+@media (max-width: 599px) {
+  /* 100dvh = the height you can actually see on a phone, which changes as the address bar hides. */
+  .hr-shell { height: 100dvh; grid-template-columns: 0 minmax(0, 1fr) 0; }
+
+  /* The sidebar leaves the grid and waits off-screen to the left. */
+  .hr-side {
+    position: fixed; top: 0; bottom: 0; left: 0; z-index: 30; width: 264px;
+    transform: translateX(-100%); transition: transform var(--duration-base) var(--ease-out);
+    box-shadow: var(--shadow-lift);
+  }
+  .hr-shell.side-open .hr-side { transform: none; }
+  .hr-scrim { display: block; position: fixed; inset: 0; z-index: 20; background: color-mix(in srgb, var(--ink) 40%, transparent); }
+
+  /* The tablet rule above hid the words to make an icon strip. The phone menu is full width, so bring them back. */
+  .hr-side .label { display: inline; }
+  .hr-side .grp { display: block; }
+  .hr-side .count { display: grid; }
+  .hr-side .school div { display: block; }
+  .hr-side a { justify-content: flex-start; padding: 0 var(--space-3); }
+
+  .hr-menu-btn { display: grid; }
+  .hr-tabs { padding: 0 var(--space-3); gap: var(--space-2); }
+  .hr-tabs h2 { margin-right: var(--space-1); white-space: nowrap; }
+  .hr-page { padding: var(--space-4); }
+  .hr-foot { gap: var(--space-2); padding: 0 var(--space-3); }
+  .hr-foot .hide-phone { display: none; }
+}
+
+/* ---------- 2. Printing ---------- */
+/* On screen the shell fills exactly one screen and only the page scrolls. On paper that would cut a
+   report card off after one page, so the shell turns back into an ordinary page and its frame is hidden. */
+@media print {
+  .hr-shell { display: block; height: auto; min-height: 0; }
+  .hr-side, .hr-tabs, .hr-rail, .hr-foot, .hr-stripe, .hr-scrim { display: none !important; }
+  .hr-main, .hr-page { display: block; overflow: visible; padding: 0; }
+}

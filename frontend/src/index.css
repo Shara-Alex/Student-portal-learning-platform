@@ -2,12 +2,15 @@
  * Styling follows the Homeroom design system.
  *   styles/tokens.css    the colours, fonts, radii and shadows (CSS variables)
  *   styles/homeroom.css  the ready-made component classes (hr-btn, hr-list, hr-badge ...)
+ *   styles/app.css       our additions where the design says nothing (phones, printing)
  * Tailwind is used for layout only (flex, grid, gap, padding).
  */
 @import "tailwindcss";
 @import "./styles/tokens.css";
 /* In the "components" layer so a Tailwind utility on the same element still wins, e.g. hr-input + w-48. */
 @import "./styles/homeroom.css" layer(components);
+/* Our own additions (phone menu, printing). After homeroom.css so they win when both set the same thing. */
+@import "./styles/app.css" layer(components);
 
 /* Teach Tailwind the Homeroom names, so bg-board, text-ink-muted, rounded-md, shadow-card etc. work. */
 @theme inline {
