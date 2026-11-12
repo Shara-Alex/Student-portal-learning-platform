@@ -42,6 +42,8 @@ Debugging a feature means opening exactly two folders.
 | 8  | communication   | ✅      | Private in-app messages between staff and families      |
 | 9  | portal          | ✅      | Parent / student read-only views: results, attendance, fees, timetable |
 | 10 | admissions      | ✅      | Public application form at /apply, stages board, enrol as a student |
+| 11 | notifications   | ✅      | Emails sent out to families and staff (absences, notices), queued and logged; `send_notifications` command |
+| 12 | settings        | ✅      | School details, users and passwords, academic years (frontend only; uses the core API) |
 
 ### Later, as we expand
 
@@ -59,7 +61,7 @@ Parked on purpose. Each one slots into an existing module when a school needs it
 | Service hours                   | new module     |
 | Staff attendance and leave      | new module     |
 
-Roles: `admin`, `teacher`, `parent`, `student` (one `User` table, `role` field).
+Roles: `admin`, `teacher`, `bursar`, `front_office`, `parent`, `student` (one `User` table, `role` field).
 
 **Home is "Today"**, not a menu: a teacher sees today's lessons and what needs doing, the admin
 sees whole-school figures and what to chase, a parent sees each child's day. The grid of apps is
@@ -99,6 +101,9 @@ npm run dev                             # http://localhost:5173  (proxies /api t
 ```
 
 Run backend tests: `python manage.py test`.
+
+After pulling new code, always run `python manage.py migrate` before `runserver`: new
+commits can add database columns, and the API returns 500 errors until they exist.
 
 ## Run with Docker (same as production)
 

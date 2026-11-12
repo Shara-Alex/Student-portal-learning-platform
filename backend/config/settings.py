@@ -6,6 +6,8 @@ DigitalOcean. One instance of this app == one school.
 import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load a .env file if present (keeps local dev simple without extra packages).
@@ -19,6 +21,11 @@ if _env_file.exists():
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-insecure-key")
 DEBUG = os.environ.get("DEBUG", "1") == "1"
+
+# Refuse to run a live site on a placeholder key: anyone who knows it could forge logins.
+if not DEBUG and SECRET_KEY in ("dev-only-insecure-key", "change-me", ""):
+    raise ImproperlyConfigured("Set a real SECRET_KEY in backend/.env before running with DEBUG=0.")
+
 ALLOWED_HOSTS = [h for h in os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h]
 
 INSTALLED_APPS = [
@@ -47,6 +54,8 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    # Serves /static/ (the admin's CSS and JS) itself, so it works with DEBUG=0.
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
