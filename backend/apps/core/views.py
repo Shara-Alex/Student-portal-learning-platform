@@ -1,14 +1,30 @@
-from rest_framework import generics, viewsets
+import os
+
+from django.db.models import Q
+from django.http import FileResponse
+from rest_framework import generics, mixins, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .mixins import ProtectedDeleteMixin
 from .models import AcademicYear, School, Term, User
-from .permissions import IsStaff, ReadOnlyOrAdmin
-from .serializers import AcademicYearSerializer, SchoolSerializer, TermSerializer, UserSerializer
+from .permissions import IsAdmin, ReadOnlyOrAdmin, StaffReadAdminWrite
+from .serializers import (
+    AcademicYearSerializer,
+    ChangePasswordSerializer,
+    SchoolSerializer,
+    SetPasswordSerializer,
+    TermSerializer,
+    UserAdminSerializer,
+    UserSerializer,
+)
 
 
 class MeView(generics.RetrieveUpdateAPIView):
-    """GET /api/auth/me  -> the logged-in user. PATCH to update own profile."""
+    """GET /api/auth/me/ -> the logged-in user. PATCH to change your own name, email or phone."""
 
     serializer_class = UserSerializer
 
@@ -16,8 +32,19 @@ class MeView(generics.RetrieveUpdateAPIView):
         return self.request.user
 
 
+class ChangePasswordView(APIView):
+    """POST /api/auth/change-password/ {current_password, new_password}  Change your own password."""
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        request.user.set_password(serializer.validated_data["new_password"])
+        request.user.save(update_fields=["password"])
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class SchoolView(APIView):
-    """GET/PUT /api/core/school -> the single school record for this instance."""
+    """GET / PUT / PATCH /api/core/school/ -> the single school record for this instance."""
 
     permission_classes = [ReadOnlyOrAdmin]
 
@@ -25,34 +52,91 @@ class SchoolView(APIView):
         school = School.current()
         return Response(SchoolSerializer(school).data if school else None)
 
-    def put(self, request):
+    def _save(self, request, partial):
         school = School.current() or School()
-        serializer = SchoolSerializer(school, data=request.data)
+        serializer = SchoolSerializer(school, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
 
+    def put(self, request):
+        return self._save(request, partial=False)
 
-class AcademicYearViewSet(viewsets.ModelViewSet):
+    def patch(self, request):
+        """Change some fields only, e.g. upload just the logo."""
+        return self._save(request, partial=True)
+
+
+class SchoolLogoView(APIView):
+    """GET /api/core/school/logo/  The logo image. Open to anyone, so the login page can show it."""
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request):
+        school = School.current()
+        if not school or not school.logo:
+            raise NotFound("No logo has been uploaded.")
+        return FileResponse(school.logo.open("rb"), filename=os.path.basename(school.logo.name))
+
+
+class AcademicYearViewSet(ProtectedDeleteMixin, viewsets.ModelViewSet):
+    """/api/core/years/  Setting is_current on one year un-sets it on the others (see models.py)."""
+
     queryset = AcademicYear.objects.prefetch_related("terms")
     serializer_class = AcademicYearSerializer
     permission_classes = [ReadOnlyOrAdmin]
+    protected_message = "This year has classes, marks or fees recorded against it, so it cannot be deleted."
 
 
-class TermViewSet(viewsets.ModelViewSet):
+class TermViewSet(ProtectedDeleteMixin, viewsets.ModelViewSet):
+    """/api/core/terms/  Setting is_current on one term un-sets the others and makes its year current."""
+
     queryset = Term.objects.select_related("year")
     serializer_class = TermSerializer
     permission_classes = [ReadOnlyOrAdmin]
+    protected_message = "This term has marks or fees recorded against it, so it cannot be deleted."
 
 
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
-    """GET /api/core/users/?role=teacher -> staff-only list of users, e.g. to pick a class teacher."""
+class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
+    """
+    /api/core/users/?role=&search=&is_active=
+    /api/core/users/<id>/set-password/   POST {password}: an admin resets someone's password
 
-    serializer_class = UserSerializer
-    permission_classes = [IsStaff]
+    Admins manage users here. Teachers may read the list of ACTIVE users (to pick a class teacher).
+    There is no delete: a leaver is deactivated, so their name stays on the marks and messages they wrote.
+    """
+
+    permission_classes = [StaffReadAdminWrite]
+
+    def is_admin(self):
+        return self.request.user.role == "admin"
+
+    def get_serializer_class(self):
+        # Teachers get the short public version; admins get roles, active flags and last login too.
+        return UserAdminSerializer if self.is_admin() else UserSerializer
 
     def get_queryset(self):
-        qs = User.objects.filter(is_active=True).order_by("last_name", "first_name", "username")
-        if self.request.query_params.get("role"):
-            qs = qs.filter(role=self.request.query_params["role"])
+        qs = User.objects.select_related("guardian", "student").order_by("last_name", "first_name", "username")
+        if not self.is_admin():
+            qs = qs.filter(is_active=True)
+        if self.action != "list":
+            return qs
+        params = self.request.query_params
+        if params.get("role"):
+            qs = qs.filter(role=params["role"])
+        if params.get("is_active") in ("true", "false"):
+            qs = qs.filter(is_active=params["is_active"] == "true")
+        search = params.get("search", "").strip()
+        if search:
+            qs = qs.filter(Q(first_name__icontains=search) | Q(last_name__icontains=search) | Q(username__icontains=search))
         return qs
+
+    @action(detail=True, methods=["post"], url_path="set-password", permission_classes=[IsAdmin])
+    def set_password(self, request, pk=None):
+        user = self.get_object()
+        serializer = SetPasswordSerializer(data=request.data, context={"user": user})
+        serializer.is_valid(raise_exception=True)
+        user.set_password(serializer.validated_data["password"])
+        user.save(update_fields=["password"])
+        return Response(status=status.HTTP_204_NO_CONTENT)

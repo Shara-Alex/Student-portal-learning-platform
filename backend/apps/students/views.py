@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 from apps.core.mixins import ProtectedDeleteMixin
 from apps.core.services import create_login
-from apps.core.permissions import IsAdmin, ReadOnlyOrAdmin, StaffReadAdminWrite
+from apps.core.permissions import IsAdmin, IsOffice, ReadOnlyOrAdmin, ReadOnlyOrOffice, StaffReadOfficeWrite
 
 from .models import Enrolment, Guardian, SchoolClass, Student
 from .serializers import (
@@ -33,17 +33,17 @@ class SchoolClassViewSet(ProtectedDeleteMixin, viewsets.ModelViewSet):
 
 
 class GuardianViewSet(viewsets.ModelViewSet):
-    """/api/students/guardians/?search=  Staff only: this is contact data."""
+    """/api/students/guardians/?search=  Staff only: this is contact data. Admins and the front office change it."""
 
     queryset = Guardian.objects.all()
     serializer_class = GuardianSerializer
-    permission_classes = [StaffReadAdminWrite]
+    permission_classes = [StaffReadOfficeWrite]
     filter_backends = [SearchFilter]
     search_fields = ["first_name", "last_name", "phone", "email"]
 
-    @action(detail=True, methods=["post"], permission_classes=[IsAdmin])
+    @action(detail=True, methods=["post"], permission_classes=[IsOffice])
     def login(self, request, pk=None):
-        """POST /api/students/guardians/<id>/login/  Give this guardian a portal login (admin only)."""
+        """POST /api/students/guardians/<id>/login/  Give this guardian a portal login (admin or front office)."""
         guardian = self.get_object()
         if guardian.user_id:
             return Response({"detail": "This guardian already has a login."}, status=400)
@@ -59,13 +59,13 @@ class StudentViewSet(viewsets.ModelViewSet):
     /api/students/students/?search=&school_class=&status=
 
     Who sees what:
-      admin, teacher -> every student
+      any staff      -> every student (admins and the front office may change them)
       parent         -> only their own children
       student        -> only themselves
     """
 
     serializer_class = StudentSerializer
-    permission_classes = [ReadOnlyOrAdmin]
+    permission_classes = [ReadOnlyOrOffice]
     filter_backends = [SearchFilter]
     search_fields = ["first_name", "last_name", "admission_number"]
 
@@ -88,9 +88,9 @@ class StudentViewSet(viewsets.ModelViewSet):
             qs = qs.filter(status=params["status"])
         return qs
 
-    @action(detail=True, methods=["post"], permission_classes=[IsAdmin])
+    @action(detail=True, methods=["post"], permission_classes=[IsOffice])
     def login(self, request, pk=None):
-        """POST /api/students/students/<id>/login/  Give this student a portal login (admin only)."""
+        """POST /api/students/students/<id>/login/  Give this student a portal login (admin or front office)."""
         student = self.get_object()
         if student.user_id:
             return Response({"detail": "This student already has a login."}, status=400)
@@ -105,7 +105,7 @@ class EnrolmentViewSet(viewsets.ModelViewSet):
     """/api/students/enrolments/?student=  Class history, one row per student per year."""
 
     serializer_class = EnrolmentSerializer
-    permission_classes = [StaffReadAdminWrite]
+    permission_classes = [StaffReadOfficeWrite]
 
     def get_queryset(self):
         qs = Enrolment.objects.select_related("school_class", "year")
@@ -113,7 +113,7 @@ class EnrolmentViewSet(viewsets.ModelViewSet):
             qs = qs.filter(student_id=self.request.query_params["student"])
         return qs
 
-    @action(detail=False, methods=["post"])
+    @action(detail=False, methods=["post"], permission_classes=[IsAdmin])
     def promote(self, request):
         """POST /api/students/enrolments/promote/  Year-end promotion of one class (admin only)."""
         serializer = PromoteSerializer(data=request.data)

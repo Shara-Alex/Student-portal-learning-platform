@@ -2,7 +2,7 @@ from django.db.models import Q
 from django.utils import timezone
 from rest_framework import viewsets
 
-from apps.core.permissions import ReadOnlyOrAdmin
+from apps.core.permissions import ALL_STAFF, ReadOnlyOrAdmin
 
 from .models import Announcement, Audience, Event
 from .serializers import AnnouncementSerializer, EventSerializer
@@ -12,7 +12,7 @@ class AudienceMixin:
     """Parents and students never receive staff-only items."""
 
     def for_audience(self, qs):
-        if self.request.user.role in ("admin", "teacher"):
+        if self.request.user.role in ALL_STAFF:
             return qs
         return qs.filter(audience=Audience.EVERYONE)
 

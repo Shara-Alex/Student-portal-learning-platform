@@ -42,6 +42,8 @@ class User(AbstractUser):
     class Role(models.TextChoices):
         ADMIN = "admin", "Administrator"
         TEACHER = "teacher", "Teacher"
+        BURSAR = "bursar", "Bursar"
+        FRONT_OFFICE = "front_office", "Front office"
         PARENT = "parent", "Parent / Guardian"
         STUDENT = "student", "Student"
 
@@ -64,6 +66,14 @@ class AcademicYear(TimeStamped):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.is_current:
+            # There is only ever one current year. Making this one current retires the others,
+            # and any "current term" left behind in another year.
+            AcademicYear.objects.exclude(pk=self.pk).filter(is_current=True).update(is_current=False)
+            Term.objects.exclude(year=self).filter(is_current=True).update(is_current=False)
+
 
 class Term(TimeStamped):
     year = models.ForeignKey(AcademicYear, on_delete=models.CASCADE, related_name="terms")
@@ -78,3 +88,12 @@ class Term(TimeStamped):
 
     def __str__(self):
         return f"{self.name} {self.year}"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.is_current:
+            # One current term, and it always sits inside the current year.
+            Term.objects.exclude(pk=self.pk).filter(is_current=True).update(is_current=False)
+            if not self.year.is_current:
+                self.year.is_current = True
+                self.year.save()

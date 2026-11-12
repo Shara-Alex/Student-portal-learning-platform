@@ -59,6 +59,8 @@ class Command(BaseCommand):
             for username, first, last in TEACHERS
         ]
         parent = User.objects.create_user("parent", password=PASSWORD, role="parent", first_name="Mary", last_name="Moyo")
+        User.objects.create_user("bursar", password=PASSWORD, role="bursar", first_name="Tatenda", last_name="Chari")
+        User.objects.create_user("office", password=PASSWORD, role="front_office", first_name="Linda", last_name="Sithole")
 
         # This calendar year, split into three terms. Whichever term today falls in is the current one.
         year = AcademicYear.objects.create(
@@ -140,4 +142,6 @@ class Command(BaseCommand):
         self.stdout.write("  banda   (teacher: Mathematics and History)")
         self.stdout.write("  ncube   (teacher: English and Shona)")
         self.stdout.write("  phiri   (teacher: Science and Agriculture)")
+        self.stdout.write("  bursar  (bursar: fees only)")
+        self.stdout.write("  office  (front office: students and admissions)")
         self.stdout.write("  parent  (parent of Tariro and Tinashe Moyo: sees only her own children)")

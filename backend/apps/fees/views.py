@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.core.models import Term
-from apps.core.permissions import IsAdmin
+from apps.core.permissions import FAMILY, FINANCE, IsFinance
 from apps.students.models import SchoolClass, Student
 from apps.students.permissions import can_view_student
 from apps.students.services import class_students
@@ -18,7 +18,7 @@ from apps.students.services import class_students
 from .models import Fee, FeeSettings, Invoice, InvoiceLine, Payment
 from .serializers import BillSerializer, FeeSerializer, FeeSettingsSerializer, InvoiceSerializer, PaymentSerializer
 
-# Money is the bursar's business: every screen here is admin only.
+# Money is the bursar's business: every screen here is for admins and the bursar only.
 # The one exception is a family looking at its own statement (StatementView).
 
 
@@ -31,7 +31,7 @@ class FeeViewSet(viewsets.ModelViewSet):
     """/api/fees/fees/?term=  The fee structure."""
 
     serializer_class = FeeSerializer
-    permission_classes = [IsAdmin]
+    permission_classes = [IsFinance]
     pagination_class = None
 
     def get_queryset(self):
@@ -44,7 +44,7 @@ class FeeViewSet(viewsets.ModelViewSet):
 class SettingsView(APIView):
     """GET/PUT /api/fees/settings/"""
 
-    permission_classes = [IsAdmin]
+    permission_classes = [IsFinance]
 
     def get(self, request):
         return Response(FeeSettingsSerializer(FeeSettings.current()).data)
@@ -65,7 +65,7 @@ class InvoiceViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.De
     """
 
     serializer_class = InvoiceSerializer
-    permission_classes = [IsAdmin]
+    permission_classes = [IsFinance]
     pagination_class = None
 
     def get_queryset(self):
@@ -154,18 +154,20 @@ class PaymentViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets
 
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
-    permission_classes = [IsAdmin]
+    permission_classes = [IsFinance]
 
     def perform_create(self, serializer):
         serializer.save(received_by=self.request.user)
 
 
 class StatementView(APIView):
-    """GET /api/fees/statement/?student=  One student's invoices. Admins, their guardians, or the student."""
+    """GET /api/fees/statement/?student=  One student's invoices. Finance staff, their guardians, or the student."""
 
     def get(self, request):
         student = get_object_or_404(Student, pk=request.query_params.get("student") or 0)
-        allowed = request.user.role == "admin" or (request.user.role != "teacher" and can_view_student(request.user, student))
+        role = request.user.role
+        # Finance staff see every statement; a family sees its own. Teachers and the front office see none.
+        allowed = role in FINANCE or (role in FAMILY and can_view_student(request.user, student))
         if not allowed:
             raise PermissionDenied("You can only see your own child's fees.")
         rows = list(invoices().filter(student=student))

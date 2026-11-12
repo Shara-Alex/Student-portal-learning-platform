@@ -1,10 +1,10 @@
 from rest_framework import serializers
 
 from apps.core.models import User
+from apps.core.permissions import ALL_STAFF as STAFF
 
 from .models import Message
 
-STAFF = ("admin", "teacher")
 
 
 class MessageSerializer(serializers.ModelSerializer):

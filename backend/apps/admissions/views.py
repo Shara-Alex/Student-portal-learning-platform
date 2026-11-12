@@ -12,7 +12,7 @@ from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 
 from apps.core.models import AcademicYear, School
-from apps.core.permissions import IsAdmin
+from apps.core.permissions import IsOffice
 from apps.students.models import Guardian, SchoolClass, Student
 
 from .models import Application
@@ -55,7 +55,7 @@ class ApplicationViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixin
     """
 
     serializer_class = ApplicationSerializer
-    permission_classes = [IsAdmin]
+    permission_classes = [IsOffice]
     pagination_class = None
 
     def get_queryset(self):
