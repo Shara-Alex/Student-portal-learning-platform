@@ -22,7 +22,7 @@ export interface School {
   email: string;
   currency: string;
   has_logo: boolean;  // the picture itself is at /api/core/school/logo/ (see schoolLogoUrl in api.ts)
-  time_zone?: string; // e.g. "Africa/Harare". Optional until the backend confirms it sends this.
+  time_zone: string;  // e.g. "Africa/Harare". Clocks and "the period on now" use the school's zone, not the phone's.
 }
 
 export interface Term {

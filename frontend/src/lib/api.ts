@@ -79,10 +79,13 @@ export interface Paginated<T> {
 export function errorText(e: unknown): string {
   if (!(e instanceof ApiError)) return "Something went wrong. Please try again.";
   if (e.status === 403) return "You do not have permission to do that.";
+  if (e.status === 429) return "Too many tries. Please wait a little and try again.";
   // The server sometimes answers with a plain list of messages: ["A score cannot be more than 50."]
   if (Array.isArray(e.data)) return e.data.join(" ");
   if (e.data && typeof e.data === "object") {
     return Object.entries(e.data as Record<string, unknown>)
+      // A server crash also sends a "reference" code, but its message already quotes it, so skip the duplicate.
+      .filter(([field]) => field !== "reference")
       .map(([field, msg]) => {
         const text = Array.isArray(msg) ? msg.join(" ") : String(msg);
         return field === "detail" || field === "non_field_errors" ? text : `${field.replace(/_/g, " ")}: ${text}`;
