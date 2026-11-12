@@ -8,10 +8,12 @@ import { Modal } from "@/components/ui/modal";
 import { PageHeader } from "@/components/ui/page-header";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { EmptyRow } from "@/components/ui/skeleton";
+import { useView, ViewSwitcher, type View } from "@/components/ui/view-switcher";
 import { errorText } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useClasses } from "@/modules/students/api";
-import { Download, ExternalLink } from "lucide-react";
+import { Columns3, Download, ExternalLink, List } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { downloadDocument, useApplications, useEnrol, useUpdateApplication } from "../api";
 import { STAGES, type Application, type Stage } from "../types";
@@ -19,13 +21,22 @@ import { STAGES, type Application, type Stage } from "../types";
 const tone: Record<Stage, Tone> = { applied: "info", interview: "wait", offered: "wait", enrolled: "good", declined: "bad" };
 const day = (iso: string) => new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 
-/** A kanban board: one column per stage, one card per applicant (Homeroom's KanbanCard). */
+// The same applications two ways: a board to see the stages, a list to scan and compare.
+const VIEWS: View<"board" | "list">[] = [
+  { key: "board", label: "Board", icon: Columns3 },
+  { key: "list", label: "List", icon: List },
+];
+const stageLabel = (stage: Stage) => STAGES.find((s) => s.value === stage)?.label ?? "Declined";
+
+/** A kanban board: one column per stage, one card per applicant (Homeroom's KanbanCard). Or the same as a list. */
 export function ApplicationsTab() {
   const applications = useApplications();
   const [openId, setOpenId] = useState<number | null>(null);
   const [showDeclined, setShowDeclined] = useState(false);
-  const rows = applications.data ?? [];
-  const open = rows.find((a) => a.id === openId);
+  const [view, setView] = useView(VIEWS);
+  const all = applications.data ?? [];
+  const rows = showDeclined ? all : all.filter((a) => a.status !== "declined");
+  const open = all.find((a) => a.id === openId); // from the full list, so declining one does not shut its pop-up
   const columns = showDeclined ? [...STAGES, { value: "declined" as Stage, label: "Declined" }] : STAGES;
 
   return (
@@ -34,11 +45,35 @@ export function ApplicationsTab() {
         <a href="/apply" target="_blank" rel="noreferrer" className="hr-btn"><ExternalLink size={16} /> Open the public form</a>
       </PageHeader>
       <p className="text-ink-muted">Families apply at <span className="font-mono text-ink">{window.location.origin}/apply</span>. No login is needed; share that link.</p>
-      <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" checked={showDeclined} onChange={(e) => setShowDeclined(e.target.checked)} /> Show declined applications
-      </label>
+      <div className="flex flex-wrap items-center gap-2">
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={showDeclined} onChange={(e) => setShowDeclined(e.target.checked)} /> Show declined applications
+        </label>
+        <div className="ml-auto"><ViewSwitcher views={VIEWS} value={view} onChange={setView} /></div>
+      </div>
 
-      <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(200px, 1fr))` }}>
+      {view === "list" && (
+        <div className="overflow-x-auto">
+          <table className="hr-list">
+            <thead><tr><th>Applicant</th><th>Applying for</th><th>Guardian</th><th>Phone</th><th>Applied</th><th>Stage</th></tr></thead>
+            <tbody>
+              {rows.map((a) => (
+                <tr key={a.id} className="cursor-pointer" onClick={() => setOpenId(a.id)}>
+                  <td><div className="who"><Avatar name={a.full_name} />{a.full_name}</div></td>
+                  <td>{a.applying_for}</td>
+                  <td>{a.guardian_name}</td>
+                  <td>{a.guardian_phone}</td>
+                  <td className="font-mono text-sm text-ink-muted">{day(a.created_at)}</td>
+                  <td><Badge tone={tone[a.status]}>{stageLabel(a.status)}</Badge></td>
+                </tr>
+              ))}
+              {!rows.length && <EmptyRow query={applications} colSpan={6}>No applications yet.</EmptyRow>}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {view === "board" && <div className="overflow-x-auto"><div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(200px, 1fr))` }}>
         {columns.map((column) => {
           const cards = rows.filter((a) => a.status === column.value);
           return (
@@ -57,7 +92,7 @@ export function ApplicationsTab() {
             </div>
           );
         })}
-      </div>
+      </div></div>}
       {open && <ApplicationDetail application={open} onClose={() => setOpenId(null)} />}
     </div>
   );

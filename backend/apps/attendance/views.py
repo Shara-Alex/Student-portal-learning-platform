@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 
 from apps.core.models import Term
 from apps.core.permissions import IsStaff
+from apps.notifications.services import notify_absences
 from apps.students.models import SchoolClass, Student
 from apps.students.permissions import can_view_student
 from apps.students.services import class_students, year_for
@@ -94,6 +95,11 @@ class RegisterView(APIView):
                     date=day,
                     defaults={"school_class": school_class, "status": entry["status"], "note": entry["note"], "marked_by": request.user},
                 )
+        # After the register is safely saved: email the guardians of anyone marked absent.
+        # Saving the same register again does not email them twice (see dedupe_key in notifications).
+        absent = [entry["student"] for entry in entries.validated_data if entry["status"] == AttendanceRecord.Status.ABSENT]
+        if absent:
+            notify_absences(Student.objects.filter(id__in=absent).prefetch_related("guardians"), day)
         return Response(self.sheet(request, school_class, day))
 
 

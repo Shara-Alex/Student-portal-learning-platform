@@ -36,7 +36,7 @@ export function HomePage() {
         <h1 className="text-3xl font-extrabold tracking-tight">
           {greeting()}{me.data ? `, ${me.data.first_name || me.data.username}` : ""}
         </h1>
-        <p className="text-ink-muted">{school.data?.name ?? "School not set up yet. Add it in /admin."}</p>
+        <p className="text-ink-muted">{school.data?.name ?? "School not set up yet. An administrator can add it under Settings."}</p>
       </div>
 
       <TermProgress />

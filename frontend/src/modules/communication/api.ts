@@ -1,12 +1,16 @@
 import { api, type Paginated } from "@/lib/api";
 import { query } from "@/lib/crud";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Message, MessageInput, Recipient } from "./types";
 
 const BASE = "/api/communication/messages";
 
-export const useMessages = (box: "inbox" | "sent") =>
-  useQuery({ queryKey: ["messages", box], queryFn: () => api.get<Paginated<Message>>(`${BASE}/${query({ box })}`) });
+export const useMessages = (box: "inbox" | "sent", page = 1) =>
+  useQuery({
+    queryKey: ["messages", box, page],
+    queryFn: () => api.get<Paginated<Message>>(`${BASE}/${query({ box, page })}`),
+    placeholderData: keepPreviousData, // keep the old rows on screen while the next page loads
+  });
 
 /** Opening a message also marks it as read on the server, so the lists and the unread count refetch. */
 export function useOpenMessage(id: number | null) {

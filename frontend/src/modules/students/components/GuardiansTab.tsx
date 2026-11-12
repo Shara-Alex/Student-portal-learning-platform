@@ -1,6 +1,7 @@
 import { EmptyRow } from "@/components/ui/skeleton";
 import { Avatar } from "@/components/ui/avatar";
 import { PageHeader } from "@/components/ui/page-header";
+import { Pager } from "@/components/ui/pager";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { errorText } from "@/lib/api";
@@ -13,7 +14,8 @@ import { GuardianForm } from "./GuardianForm";
 export function GuardiansTab({ canEdit }: { canEdit: boolean }) {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<Guardian | null | undefined>(undefined);
-  const guardians = useGuardians(search);
+  const [page, setPage] = useState(1);
+  const guardians = useGuardians(search, true, page);
   const remove = useDeleteGuardian();
   const rows = guardians.data?.results ?? [];
 
@@ -27,7 +29,7 @@ export function GuardiansTab({ canEdit }: { canEdit: boolean }) {
         {canEdit && <Button onClick={() => setEditing(null)}><Plus size={16} /> Add guardian</Button>}
       </PageHeader>
       <div className="flex items-center gap-2">
-        <Input className="max-w-xs" placeholder="Search name, phone or email" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <Input className="max-w-xs" placeholder="Search name, phone or email" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); /* a new search starts at page 1 */ }} />
       </div>
       {remove.isError && <p className="text-sm text-marker">{errorText(remove.error)}</p>}
       <div className="overflow-x-auto">
@@ -60,9 +62,7 @@ export function GuardiansTab({ canEdit }: { canEdit: boolean }) {
           </tbody>
         </table>
       </div>
-      {(guardians.data?.count ?? 0) > rows.length && (
-        <p className="text-sm text-ink-muted">Showing the first {rows.length} of {guardians.data?.count}. Search to narrow the list.</p>
-      )}
+      <Pager data={guardians.data} page={page} onPage={setPage} noun="guardian" />
       {editing !== undefined && <GuardianForm guardian={editing} onClose={() => setEditing(undefined)} />}
     </div>
   );

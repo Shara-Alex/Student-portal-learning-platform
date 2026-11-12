@@ -65,6 +65,12 @@ class Guardian(TimeStamped):
     def __str__(self):
         return self.full_name
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.user_id:
+            # Keep the portal login's email the same as the guardian's, so "forgot password" reaches them.
+            type(self.user).objects.filter(pk=self.user_id).exclude(email=self.email).update(email=self.email)
+
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}".strip()

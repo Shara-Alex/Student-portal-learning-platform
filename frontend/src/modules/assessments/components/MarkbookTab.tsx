@@ -10,6 +10,7 @@ import { useAssignments } from "@/modules/academics/api";
 import { useMe } from "@/modules/core/api";
 import { Paperclip, Plus } from "lucide-react";
 import { useState, type KeyboardEvent } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useMarkbook, useSaveComment, useSaveMark } from "../api";
 import type { Assessment, Markbook, MarkbookRow } from "../types";
 import { AssessmentForm } from "./AssessmentForm";
@@ -26,11 +27,20 @@ export function MarkbookTab() {
   const isTeacher = me.data?.role === "teacher";
   // Teachers pick from the classes they teach; admins from every class.
   const assignments = useAssignments(isTeacher ? { teacher: "me" } : {}, !!me.data);
-  const [chosen, setChosen] = useState("");
+  // The chosen class and subject lives in the address (?class=12), like ?tab= does,
+  // so a refresh, the Back button or a shared link all come back to the same mark sheet.
+  const [params, setParams] = useSearchParams();
+  const wanted = params.get("class") ?? "";
+  function setChosen(id: string) {
+    const next = new URLSearchParams(params);
+    next.set("class", id);
+    setParams(next, { replace: true });
+  }
   const [term, setTerm] = useState("");
   const [editing, setEditing] = useState<Assessment | null | undefined>(undefined);
 
-  const assignmentId = chosen || String(assignments.data?.[0]?.id ?? "");
+  // Use the one in the address if it is really in this user's list; otherwise fall back to the first.
+  const assignmentId = assignments.data?.some((a) => String(a.id) === wanted) ? wanted : String(assignments.data?.[0]?.id ?? "");
   const assignment = assignments.data?.find((a) => String(a.id) === assignmentId);
   const book = useMarkbook(assignmentId, term);
   // Only the subject's own teacher (or an admin) may type in the grid.

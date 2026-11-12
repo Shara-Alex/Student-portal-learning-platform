@@ -26,10 +26,10 @@ export const useStudents = (filters: StudentFilters, enabled = true) =>
 export const useClasses = () =>
   useQuery({ queryKey: ["classes"], queryFn: () => api.get<SchoolClass[]>(`${BASE}/classes/`) });
 
-export const useGuardians = (search: string, enabled = true) =>
+export const useGuardians = (search: string, enabled = true, page = 1) =>
   useQuery({
-    queryKey: ["guardians", search],
-    queryFn: () => api.get<Paginated<Guardian>>(`${BASE}/guardians/${query({ search })}`),
+    queryKey: ["guardians", search, page],
+    queryFn: () => api.get<Paginated<Guardian>>(`${BASE}/guardians/${query({ search, page })}`),
     placeholderData: keepPreviousData,
     enabled,
   });

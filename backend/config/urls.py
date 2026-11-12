@@ -17,6 +17,7 @@ urlpatterns = [
     path("api/events/", include("apps.events.urls")),
     path("api/communication/", include("apps.communication.urls")),
     path("api/admissions/", include("apps.admissions.urls")),
+    path("api/notifications/", include("apps.notifications.urls")),
 ]
 
 # What to answer for an unknown address, or a crash outside the API views (used when DEBUG is off).

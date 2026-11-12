@@ -32,7 +32,7 @@ export function TabsBar({ onMenu, railOpen, onRail }: { onMenu: () => void; rail
   const name = me.data?.full_name || me.data?.username || "";
   const title = current
     ? (me.data?.role === "student" && current.studentLabel) || current.label
-    : pathname === "/apps" ? "Apps" : pathname === "/" ? "Today" : "";
+    : pathname === "/apps" ? "Apps" : pathname === "/" ? "Today" : pathname === "/account" ? "My account" : "";
 
   return (
     <div className="hr-tabs">
@@ -64,7 +64,8 @@ export function TabsBar({ onMenu, railOpen, onRail }: { onMenu: () => void; rail
         <button type="button" onClick={toggleTheme} className="hr-iconbtn" aria-label={mode === "paper" ? "Switch to the dark chalkboard theme" : "Switch to the light paper theme"}>
           {mode === "paper" ? <Moon /> : <Sun />}
         </button>
-        {name && <span title={name}><Avatar name={name} /></span>}
+        {/* Your initials open My account. !p-0: the tab bar gives its links padding, which a round avatar does not want. */}
+        {name && <Link to="/account" className="!p-0" title={`${name}: my account`} aria-label="My account"><Avatar name={name} /></Link>}
         <button type="button" onClick={logout} className="hr-iconbtn" aria-label="Sign out"><LogOut /></button>
       </div>
     </div>

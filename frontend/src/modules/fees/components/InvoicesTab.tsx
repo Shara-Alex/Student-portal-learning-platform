@@ -7,6 +7,7 @@ import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { PageHeader } from "@/components/ui/page-header";
+import { Presets } from "@/components/ui/presets";
 import { Select } from "@/components/ui/select";
 import { errorText } from "@/lib/api";
 import { useClasses } from "@/modules/students/api";
@@ -53,10 +54,8 @@ export function InvoicesTab() {
           <option value="">All classes</option>
           {classes.data?.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </Select>
-        <Select className="w-40" aria-label="Status" value={status} onChange={(e) => setStatus(e.target.value)}>
-          <option value="">Any status</option>
-          {Object.entries(STATUS).map(([key, s]) => <option key={key} value={key}>{s.label}</option>)}
-        </Select>
+        {/* Homeroom's preset filters: "Overdue" is one tap, not a dropdown. */}
+        <Presets label="Status" value={status} onChange={setStatus} options={[{ key: "", label: "All" }, ...Object.entries(STATUS).map(([key, s]) => ({ key, label: s.label }))]} />
         <Button variant="default" className="ml-auto" disabled={lateFees.isPending} onClick={() => window.confirm("Add the late fee to every overdue invoice that has not had one yet?") && lateFees.mutate(undefined)}>
           Apply late fees
         </Button>

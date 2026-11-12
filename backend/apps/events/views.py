@@ -3,6 +3,7 @@ from django.utils import timezone
 from rest_framework import viewsets
 
 from apps.core.permissions import ALL_STAFF, ReadOnlyOrAdmin
+from apps.notifications.services import notify_notice
 
 from .models import Announcement, Audience, Event
 from .serializers import AnnouncementSerializer, EventSerializer
@@ -48,4 +49,5 @@ class AnnouncementViewSet(AudienceMixin, viewsets.ModelViewSet):
         return qs
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        announcement = serializer.save(author=self.request.user)
+        notify_notice(announcement)  # also email it to the people it is for

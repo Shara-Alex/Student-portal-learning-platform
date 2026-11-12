@@ -3,10 +3,10 @@
  * To add a module: create src/modules/<name>/, then add one entry here.
  * The sidebar, the apps menu, the tab bar and the router are all generated from this list.
  */
-import { ALL_STAFF, EVERYONE, FAMILY, FINANCE, OFFICE, TEACHING } from "@/lib/roles";
+import { ADMIN, ALL_STAFF, EVERYONE, FAMILY, FINANCE, OFFICE, TEACHING } from "@/lib/roles";
 import type { Section } from "@/lib/sections";
 import type { LucideIcon } from "lucide-react";
-import { BookOpen, CalendarDays, ClipboardCheck, ClipboardList, Mail, UserPlus, Users, Wallet } from "lucide-react";
+import { BookOpen, CalendarDays, ClipboardCheck, ClipboardList, Mail, Settings, UserPlus, Users, Wallet } from "lucide-react";
 import type { ComponentType } from "react";
 import { AcademicsPage } from "./academics/AcademicsPage";
 import { sections as academicsSections } from "./academics/sections";
@@ -25,6 +25,8 @@ import { FeesPage } from "./fees/FeesPage";
 import { sections as feesSections } from "./fees/sections";
 import { PortalPage } from "./portal/PortalPage";
 import { sections as portalSections } from "./portal/sections";
+import { sections as settingsSections } from "./settings/sections";
+import { SettingsPage } from "./settings/SettingsPage";
 import { sections as studentsSections } from "./students/sections";
 import { StudentsPage } from "./students/StudentsPage";
 
@@ -61,4 +63,6 @@ export const modules: Module[] = [
   { name: "events", label: "Calendar", icon: CalendarDays, color: "board", page: EventsPage, roles: EVERYONE, group: "office", sections: eventsSections },
   { name: "fees", label: "Fees", icon: Wallet, color: "marker", page: FeesPage, roles: FINANCE, group: "office", sections: feesSections },
   { name: "admissions", label: "Admissions", icon: UserPlus, color: "crayon", page: AdmissionsPage, roles: OFFICE, group: "office", sections: admissionsSections },
+  // No backend folder of its own: it manages what lives in the backend's core app (users, the school, years and terms).
+  { name: "settings", label: "Settings", icon: Settings, color: "pen", page: SettingsPage, roles: ADMIN, group: "office", sections: settingsSections },
 ];

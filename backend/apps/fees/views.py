@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 
 from apps.core.models import Term
 from apps.core.permissions import FAMILY, FINANCE, IsFinance
+from apps.notifications.services import notify_payment
 from apps.students.models import SchoolClass, Student
 from apps.students.permissions import can_view_student
 from apps.students.services import class_students
@@ -157,7 +158,8 @@ class PaymentViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets
     permission_classes = [IsFinance]
 
     def perform_create(self, serializer):
-        serializer.save(received_by=self.request.user)
+        payment = serializer.save(received_by=self.request.user)
+        notify_payment(payment)  # a receipt by email to the guardians
 
 
 class StatementView(APIView):

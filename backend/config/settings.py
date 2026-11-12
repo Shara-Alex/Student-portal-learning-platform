@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "apps.events",
     "apps.communication",
     "apps.admissions",
+    "apps.notifications",
 ]
 
 MIDDLEWARE = [
@@ -153,6 +154,10 @@ if os.environ.get("EMAIL_HOST"):
 else:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "School <no-reply@localhost>")
+
+# Send small batches of notifications while the user waits (1), or leave everything for the
+# scheduled `send_notifications` command (0). See apps/notifications/services.py.
+NOTIFICATIONS_SEND_NOW = os.environ.get("NOTIFICATIONS_SEND_NOW", "1") == "1"
 
 # Where the React app lives. Used to build the links we put in emails.
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173").rstrip("/")

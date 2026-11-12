@@ -5,11 +5,14 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { AppShell } from "./layout/AppShell";
 import { ApiError } from "./lib/api";
 import { ApplyPage } from "./modules/admissions/ApplyPage";
+import { AccountPage } from "./modules/core/AccountPage";
 import { useMe } from "./modules/core/api";
 import { AppsPage } from "./modules/core/AppsPage";
+import { ForgotPasswordPage } from "./modules/core/ForgotPasswordPage";
 import { HomePage } from "./modules/core/HomePage";
 import { LoginPage } from "./modules/core/LoginPage";
 import { NotFoundPage } from "./modules/core/NotFoundPage";
+import { ResetPasswordPage } from "./modules/core/ResetPasswordPage";
 import type { Role } from "./modules/core/types";
 import { modules } from "./modules/registry";
 
@@ -43,10 +46,14 @@ export default function App() {
             {/* Open to anyone, no login: */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/apply" element={<ApplyPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            {/* The link in the "forgot password" email opens this one: */}
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             {/* Everything inside AppShell needs a login: */}
             <Route element={<AppShell />}>
               <Route path="/" element={<HomePage />} />
               <Route path="/apps" element={<AppsPage />} />
+              <Route path="/account" element={<AccountPage />} />
               {modules.map((m) => (
                 <Route key={m.name} path={`/${m.name}`} element={<OnlyFor roles={m.roles}><m.page /></OnlyFor>} />
               ))}

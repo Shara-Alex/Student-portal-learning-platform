@@ -48,7 +48,8 @@ class GuardianViewSet(viewsets.ModelViewSet):
         if guardian.user_id:
             return Response({"detail": "This guardian already has a login."}, status=400)
         guardian.user = create_login(
-            "parent", request.data.get("username"), request.data.get("password"), guardian.first_name, guardian.last_name
+            "parent", request.data.get("username"), request.data.get("password"), guardian.first_name, guardian.last_name,
+            email=guardian.email,  # so "forgot password" can reach them
         )
         guardian.save(update_fields=["user", "updated_at"])
         return Response(self.get_serializer(guardian).data)

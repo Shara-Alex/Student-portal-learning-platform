@@ -6,6 +6,7 @@ import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { PageHeader } from "@/components/ui/page-header";
+import { Pager } from "@/components/ui/pager";
 import { Textarea } from "@/components/ui/textarea";
 import { errorText } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -20,7 +21,8 @@ const when = (iso: string) => new Date(iso).toLocaleString("en-GB", { day: "nume
 interface Draft { to?: Recipient; subject?: string; replyTo?: number }
 
 export function MessagesTab({ box }: { box: "inbox" | "sent" }) {
-  const messages = useMessages(box);
+  const [page, setPage] = useState(1);
+  const messages = useMessages(box, page);
   const [openId, setOpenId] = useState<number | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
   const rows = messages.data?.results ?? [];
@@ -50,6 +52,7 @@ export function MessagesTab({ box }: { box: "inbox" | "sent" }) {
           </tbody>
         </table>
       </div>
+      <Pager data={messages.data} page={page} onPage={setPage} noun="message" />
       {openId !== null && (
         <MessageView
           id={openId}

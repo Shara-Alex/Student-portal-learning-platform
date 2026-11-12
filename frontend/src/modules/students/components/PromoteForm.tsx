@@ -61,7 +61,7 @@ export function PromoteForm({ fromClass, onClose }: { fromClass: SchoolClass; on
           </Field>
         </div>
         {!years.isLoading && !otherYears.length && (
-          <p className="text-sm text-bus-ink">Create the next academic year first (in /admin), then come back.</p>
+          <p className="text-sm text-bus-ink">Create the next academic year first (Settings, Years and terms), then come back.</p>
         )}
 
         <div>
