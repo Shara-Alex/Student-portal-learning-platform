@@ -22,10 +22,12 @@ class SchoolClassSerializer(serializers.ModelSerializer):
 
 class GuardianSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(read_only=True)
+    # The username of their portal login, or "" if they have not been given one.
+    username = serializers.CharField(source="user.username", read_only=True, default="")
 
     class Meta:
         model = Guardian
-        fields = ["id", "first_name", "last_name", "full_name", "relationship", "phone", "email", "address"]
+        fields = ["id", "first_name", "last_name", "full_name", "relationship", "phone", "email", "address", "username"]
 
 
 class StudentSerializer(serializers.ModelSerializer):
@@ -39,6 +41,7 @@ class StudentSerializer(serializers.ModelSerializer):
     )
     current_class = serializers.SerializerMethodField()
     current_class_name = serializers.SerializerMethodField()
+    username = serializers.CharField(source="user.username", read_only=True, default="")
 
     class Meta:
         model = Student
@@ -47,7 +50,7 @@ class StudentSerializer(serializers.ModelSerializer):
             "date_of_birth", "admission_date", "status", "address",
             "blood_group", "allergies", "medical_notes",
             "guardians", "guardian_details",
-            "school_class", "current_class", "current_class_name",
+            "school_class", "current_class", "current_class_name", "username",
         ]
 
     # --- reading -----------------------------------------------------------

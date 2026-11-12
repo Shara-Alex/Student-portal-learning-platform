@@ -10,9 +10,9 @@ import type { SubjectResult } from "../types";
 const pct = (value: number | null) => (value === null ? "—" : `${value}%`);
 
 /** One student's report card for a term, with a switch to their full transcript. Prints cleanly. */
-export function ReportCardView({ student, term, onBack }: { student: number; term: string; onBack: () => void }) {
+export function ReportCardView({ student, term, onBack }: { student: number; term: string; onBack?: () => void }) {
   const [showTranscript, setShowTranscript] = useState(false);
-  const report = useReportCard(student, term);
+  const report = useReportCard(student, term, !!term);
   const transcript = useTranscript(student, showTranscript);
   const data = report.data;
 
@@ -20,7 +20,7 @@ export function ReportCardView({ student, term, onBack }: { student: number; ter
     <div className="space-y-4">
       {/* print:hidden = leave these buttons off the printed page */}
       <div className="flex flex-wrap items-center gap-2 print:hidden">
-        <Button variant="default" onClick={onBack}><ArrowLeft size={16} /> All students</Button>
+        {onBack && <Button variant="default" onClick={onBack}><ArrowLeft size={16} /> All students</Button>}
         <Button variant="default" className="ml-auto" onClick={() => setShowTranscript(!showTranscript)}>
           {showTranscript ? "Show this term's report" : "Show full transcript"}
         </Button>

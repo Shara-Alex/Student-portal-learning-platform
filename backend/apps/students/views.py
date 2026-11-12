@@ -5,7 +5,8 @@ from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 
 from apps.core.mixins import ProtectedDeleteMixin
-from apps.core.permissions import ReadOnlyOrAdmin, StaffReadAdminWrite
+from apps.core.services import create_login
+from apps.core.permissions import IsAdmin, ReadOnlyOrAdmin, StaffReadAdminWrite
 
 from .models import Enrolment, Guardian, SchoolClass, Student
 from .serializers import (
@@ -39,6 +40,18 @@ class GuardianViewSet(viewsets.ModelViewSet):
     permission_classes = [StaffReadAdminWrite]
     filter_backends = [SearchFilter]
     search_fields = ["first_name", "last_name", "phone", "email"]
+
+    @action(detail=True, methods=["post"], permission_classes=[IsAdmin])
+    def login(self, request, pk=None):
+        """POST /api/students/guardians/<id>/login/  Give this guardian a portal login (admin only)."""
+        guardian = self.get_object()
+        if guardian.user_id:
+            return Response({"detail": "This guardian already has a login."}, status=400)
+        guardian.user = create_login(
+            "parent", request.data.get("username"), request.data.get("password"), guardian.first_name, guardian.last_name
+        )
+        guardian.save(update_fields=["user", "updated_at"])
+        return Response(self.get_serializer(guardian).data)
 
 
 class StudentViewSet(viewsets.ModelViewSet):
@@ -74,6 +87,18 @@ class StudentViewSet(viewsets.ModelViewSet):
         if params.get("status"):
             qs = qs.filter(status=params["status"])
         return qs
+
+    @action(detail=True, methods=["post"], permission_classes=[IsAdmin])
+    def login(self, request, pk=None):
+        """POST /api/students/students/<id>/login/  Give this student a portal login (admin only)."""
+        student = self.get_object()
+        if student.user_id:
+            return Response({"detail": "This student already has a login."}, status=400)
+        student.user = create_login(
+            "student", request.data.get("username"), request.data.get("password"), student.first_name, student.last_name
+        )
+        student.save(update_fields=["user", "updated_at"])
+        return Response(self.get_serializer(student).data)
 
 
 class EnrolmentViewSet(viewsets.ModelViewSet):

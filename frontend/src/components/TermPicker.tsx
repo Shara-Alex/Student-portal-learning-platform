@@ -3,7 +3,7 @@ import { useTerms } from "@/modules/core/api";
 import { useEffect } from "react";
 
 /**
- * A dropdown of terms. Until the user picks one it selects the current term by itself.
+ * A dropdown of terms, shared by every module that reports "per term". Until the user picks one it selects the current term by itself.
  * `year` (optional) limits the list to one academic year.
  */
 export function TermPicker({ value, onChange, year }: { value: string; onChange: (term: string) => void; year?: number }) {

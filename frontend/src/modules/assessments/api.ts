@@ -24,11 +24,17 @@ export const useClassResults = (schoolClass: string, term: string) =>
     enabled: !!schoolClass && !!term,
   });
 
-export const useReportCard = (student: number, term: string) =>
+export const useReportCard = (student: number, term: string, enabled = true) =>
   useQuery({
     queryKey: ["report-card", student, term],
     queryFn: () => api.get<ReportCard>(`${BASE}/report-card/${query({ student, term })}`),
+    enabled,
   });
+
+/** This term's assessments that still have students without a mark (for the Today to-do list). */
+export interface Outstanding { id: number; name: string; subject_name: string; school_class_name: string; marked: number; students: number }
+export const useOutstanding = (enabled: boolean) =>
+  useQuery({ queryKey: ["markbook", "outstanding"], queryFn: () => api.get<Outstanding[]>(`${BASE}/outstanding/`), enabled });
 
 export const useTranscript = (student: number, enabled: boolean) =>
   useQuery({

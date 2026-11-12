@@ -5,7 +5,7 @@ import { useClasses } from "@/modules/students/api";
 import { useState } from "react";
 import { useClassResults } from "../api";
 import { ReportCardView } from "./ReportCardView";
-import { TermPicker } from "./TermPicker";
+import { TermPicker } from "@/components/TermPicker";
 
 /** Pick a class and a term, see every student's average, open one to read or print their report card. */
 export function ReportsTab() {

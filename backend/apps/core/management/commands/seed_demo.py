@@ -3,17 +3,21 @@ python manage.py seed_demo
 
 Fills an EMPTY database with a small made-up school so the app can be tried
 straight away: one admin, three teachers, one parent, a year with three terms,
-classes, students, subjects, a school day and a timetable.
+classes, students, subjects, a school day, a timetable, a fee structure,
+a few calendar events and notices, and one application waiting in admissions.
 
 For local testing only. It refuses to run if there are already students.
 """
-from datetime import date, time
+from datetime import date, time, timedelta
 
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 from apps.academics.models import Period, Subject, TeachingAssignment, TimetableEntry
+from apps.admissions.models import Application
 from apps.core.models import AcademicYear, School, Term, User
+from apps.events.models import Announcement, Event
+from apps.fees.models import Fee
 from apps.students.models import Guardian, SchoolClass, Student
 
 PASSWORD = "demo12345"  # the same for every demo login; change it before showing anyone real data
@@ -96,8 +100,8 @@ class Command(BaseCommand):
         lessons = [p for p in periods if not p.is_break]
 
         # Every class takes every subject; the three teachers share them out.
-        # Each class's week is the same pattern shifted along, and a teacher who is
-        # already busy in a slot leaves that slot free (so there are gaps to fill in by hand).
+        # Each class's week is the same pattern shifted along so no teacher is in two places.
+        # The last period on Friday is left free in every class, so there is a gap to fill in by hand.
         for class_index, school_class in enumerate(classes):
             taught = [
                 TeachingAssignment.objects.create(year=year, school_class=school_class, subject=subject, teacher=teachers[i % 3])
@@ -105,10 +109,30 @@ class Command(BaseCommand):
             ]
             for day in range(1, 6):
                 for slot, period in enumerate(lessons):
+                    if day == 5 and period == lessons[-1]:
+                        continue
                     assignment = taught[(day + slot + class_index * 2) % len(taught)]
                     busy = TimetableEntry.objects.filter(day=day, period=period, assignment__teacher=assignment.teacher).exists()
                     if not busy:
                         TimetableEntry.objects.create(assignment=assignment, day=day, period=period)
+
+        # Fees for the current term: tuition per class, and a levy everyone pays.
+        for school_class in classes:
+            Fee.objects.create(term=current, school_class=school_class, name="Tuition", amount=400 + 50 * school_class.level)
+        Fee.objects.create(term=current, school_class=None, name="Sports levy", amount=30)
+
+        admin = User.objects.get(username="admin")
+        Event.objects.create(title="Parents' evening", start_date=today + timedelta(days=6), kind="meeting")
+        Event.objects.create(title="End of term exams", start_date=today + timedelta(days=14), end_date=today + timedelta(days=21), kind="exam")
+        Event.objects.create(title="Staff planning meeting", start_date=today + timedelta(days=2), kind="meeting", audience="staff")
+        Announcement.objects.create(title="Fees are due", body="Please settle this term's fees at the school office.", pinned=True, author=admin)
+        Announcement.objects.create(title="Marks deadline", body="All coursework marks must be entered before the exams start.", audience="staff", author=admin)
+
+        Application.objects.create(
+            first_name="Chipo", last_name="Banda", gender="F", date_of_birth=date(today.year - 13, 6, 14), applying_for="Form 1",
+            previous_school="Hillside Primary", guardian_first_name="Joseph", guardian_last_name="Banda",
+            guardian_relationship="father", guardian_phone="+263 77 555 0199",
+        )
 
         self.stdout.write(self.style.SUCCESS("Demo school created."))
         self.stdout.write(f"  Password for every demo login: {PASSWORD}")
@@ -116,4 +140,4 @@ class Command(BaseCommand):
         self.stdout.write("  banda   (teacher: Mathematics and History)")
         self.stdout.write("  ncube   (teacher: English and Shona)")
         self.stdout.write("  phiri   (teacher: Science and Agriculture)")
-        self.stdout.write("  parent  (parent of Tariro and Tinashe Moyo: sees no apps until the portal is built)")
+        self.stdout.write("  parent  (parent of Tariro and Tinashe Moyo: sees only her own children)")

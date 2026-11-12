@@ -9,6 +9,7 @@ import { useState, type FormEvent } from "react";
 import { useClasses, useSaveStudent } from "../api";
 import { BLOOD_GROUPS, type Gender, type Guardian, type Student, type StudentStatus } from "../types";
 import { GuardianPicker } from "./GuardianPicker";
+import { LoginBox } from "./LoginBox";
 
 /** Add (student = null) or edit a student. */
 export function StudentForm({ student, onClose }: { student: Student | null; onClose: () => void }) {
@@ -101,6 +102,8 @@ export function StudentForm({ student, onClose }: { student: Student | null; onC
       <div className="mt-4">
         <GuardianPicker selected={guardians} onChange={setGuardians} />
       </div>
+
+      {student && <LoginBox kind="students" id={student.id} username={student.username} who="student" />}
 
       {save.isError && <p className="mt-3 text-sm text-marker">{errorText(save.error)}</p>}
       <div className="mt-5 flex justify-end gap-2">

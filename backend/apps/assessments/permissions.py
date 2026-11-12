@@ -1,5 +1,7 @@
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 
+from apps.students.permissions import can_view_student  # noqa: F401  (kept here so older imports still work)
+
 
 class AssessmentPermission(BasePermission):
     """
@@ -15,12 +17,3 @@ class AssessmentPermission(BasePermission):
         if request.method in SAFE_METHODS:
             return True
         return request.user.role == "admin" or obj.assignment.teacher_id == request.user.id
-
-
-def can_view_student(user, student):
-    """Who may see one student's results: staff, that student's own guardians, and the student."""
-    if user.role in ("admin", "teacher"):
-        return True
-    if user.role == "parent":
-        return student.guardians.filter(user=user).exists()
-    return student.user_id == user.id

@@ -134,3 +134,20 @@ class StudentsApiTests(TestCase):
         self.assertEqual(self.client.post("/api/students/enrolments/promote/", body, format="json").status_code, 400)
         self.login(self.teacher)
         self.assertEqual(self.client.post("/api/students/enrolments/promote/", body, format="json").status_code, 403)
+
+    def test_admin_gives_a_guardian_and_a_student_a_login(self):
+        self.login(self.admin)
+        fresh = Guardian.objects.create(first_name="John", last_name="Dube")
+        url = f"/api/students/guardians/{fresh.id}/login/"
+        self.assertEqual(self.client.post(url, {"username": "jdube", "password": "short"}).status_code, 400)
+        self.assertEqual(self.client.post(url, {"username": "parent", "password": "a-long-enough-one"}).status_code, 400)  # taken
+        r = self.client.post(url, {"username": "jdube", "password": "a-long-enough-one"})
+        self.assertEqual((r.status_code, r.data["username"]), (200, "jdube"))
+        self.assertEqual(User.objects.get(username="jdube").role, "parent")
+        self.assertEqual(self.client.post(url, {"username": "again", "password": "a-long-enough-one"}).status_code, 400)
+
+        student_id = self.new_student().data["id"]
+        r = self.client.post(f"/api/students/students/{student_id}/login/", {"username": "tino", "password": "a-long-enough-one"})
+        self.assertEqual((r.data["username"], User.objects.get(username="tino").role), ("tino", "student"))
+        self.login(self.teacher)
+        self.assertEqual(self.client.post(url, {"username": "x", "password": "a-long-enough-one"}).status_code, 403)

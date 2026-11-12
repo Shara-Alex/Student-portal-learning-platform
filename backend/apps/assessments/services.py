@@ -11,7 +11,7 @@ How a term mark for one subject is worked out:
 """
 from collections import defaultdict
 
-from apps.students.models import Student
+from apps.students.services import class_students
 
 from .models import AssessmentSettings, GradeScale, Mark, SubjectComment
 
@@ -105,13 +105,6 @@ def overall(rows, bands):
     average = round(sum(finals) / len(finals), 1) if finals else None
     band = grade_for(average, bands)
     return {"average": average, "grade": band.symbol if band else ""}
-
-
-def class_students(school_class, year):
-    """Active students enrolled in a class for a year, in register order."""
-    return Student.objects.filter(
-        status=Student.Status.ACTIVE, enrolments__school_class=school_class, enrolments__year=year
-    ).order_by("last_name", "first_name")
 
 
 def gradebook(assignment, term):

@@ -12,7 +12,7 @@ import { useState, type KeyboardEvent } from "react";
 import { useMarkbook, useSaveComment, useSaveMark } from "../api";
 import type { Assessment, Markbook, MarkbookRow } from "../types";
 import { AssessmentForm } from "./AssessmentForm";
-import { TermPicker } from "./TermPicker";
+import { TermPicker } from "@/components/TermPicker";
 
 const pct = (value: number | null) => (value === null ? "—" : `${value}%`);
 

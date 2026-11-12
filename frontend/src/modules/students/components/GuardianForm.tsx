@@ -7,6 +7,7 @@ import { errorText } from "@/lib/api";
 import { useState, type FormEvent } from "react";
 import { useSaveGuardian } from "../api";
 import type { Guardian, GuardianInput } from "../types";
+import { LoginBox } from "./LoginBox";
 
 interface Props {
   guardian: Guardian | null; // null = add a new one
@@ -62,6 +63,7 @@ export function GuardianForm({ guardian, onClose, onSaved }: Props) {
           <Button disabled={save.isPending}>{save.isPending ? "Saving…" : "Save"}</Button>
         </div>
       </form>
+      {guardian && <LoginBox kind="guardians" id={guardian.id} username={guardian.username} who="guardian" />}
     </Modal>
   );
 }

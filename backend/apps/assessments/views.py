@@ -14,6 +14,7 @@ from apps.academics.models import TeachingAssignment
 from apps.core.models import Term
 from apps.core.permissions import IsStaff, StaffReadAdminWrite
 from apps.students.models import SchoolClass, Student
+from apps.students.services import class_students
 
 from . import services
 from .models import Assessment, AssessmentSettings, GradeScale, Mark, SubjectComment
@@ -93,7 +94,7 @@ class AssessmentViewSet(viewsets.ModelViewSet):
 
     def _mark_sheet(self, assessment):
         saved = {m.student_id: m for m in assessment.marks.all()}
-        students = services.class_students(assessment.assignment.school_class, assessment.assignment.year)
+        students = class_students(assessment.assignment.school_class, assessment.assignment.year)
         return {
             "assessment": AssessmentSerializer(assessment, context=self.get_serializer_context()).data,
             "rows": [
@@ -117,7 +118,7 @@ class AssessmentViewSet(viewsets.ModelViewSet):
         entries = MarkEntrySerializer(data=request.data.get("marks", []), many=True)
         entries.is_valid(raise_exception=True)
         in_class = set(
-            services.class_students(assessment.assignment.school_class, assessment.assignment.year).values_list("id", flat=True)
+            class_students(assessment.assignment.school_class, assessment.assignment.year).values_list("id", flat=True)
         )
         for entry in entries.validated_data:
             if entry["student"] not in in_class:
@@ -187,6 +188,34 @@ class SubjectCommentView(APIView):
             student=data["student"], assignment=data["assignment"], term=data["term"], defaults={"text": data["text"]}
         )
         return Response(serializer.data)
+
+
+class OutstandingView(APIView):
+    """GET /api/assessments/outstanding/  This term's assessments that still have students without a mark."""
+
+    permission_classes = [IsStaff]
+
+    def get(self, request):
+        current = Assessment.objects.filter(term__is_current=True).select_related(
+            "assignment__subject", "assignment__school_class", "assignment__year"
+        ).annotate(marked=Count("marks", filter=Q(marks__score__isnull=False)))
+        if request.user.role == "teacher":
+            current = current.filter(assignment__teacher=request.user)
+        rows = []
+        for assessment in current:
+            assignment = assessment.assignment
+            students = class_students(assignment.school_class, assignment.year).count()
+            if assessment.marked < students:
+                rows.append({
+                    "id": assessment.id,
+                    "name": assessment.name,
+                    "assignment": assignment.id,
+                    "subject_name": assignment.subject.name,
+                    "school_class_name": assignment.school_class.name,
+                    "marked": assessment.marked,
+                    "students": students,
+                })
+        return Response(rows[:10])
 
 
 class ClassResultsView(APIView):

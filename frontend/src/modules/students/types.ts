@@ -19,6 +19,7 @@ export interface Guardian {
   phone: string;
   email: string;
   address: string;
+  username: string; // their portal login, or "" if they have none
 }
 
 export type Gender = "M" | "F";
@@ -43,13 +44,14 @@ export interface Student {
   guardian_details: Guardian[];   // full records, read-only
   current_class: number | null;
   current_class_name: string;
+  username: string; // the student's own portal login, or ""
 }
 
 /** What we send when saving a student. `school_class` sets the class for the current year. */
-export type StudentInput = Omit<Student, "id" | "full_name" | "guardian_details" | "current_class" | "current_class_name"> & {
+export type StudentInput = Omit<Student, "id" | "full_name" | "guardian_details" | "current_class" | "current_class_name" | "username"> & {
   school_class: number | null;
 };
-export type GuardianInput = Omit<Guardian, "id" | "full_name">;
+export type GuardianInput = Omit<Guardian, "id" | "full_name" | "username">;
 export type SchoolClassInput = Pick<SchoolClass, "name" | "level" | "class_teacher">;
 
 /** Year-end promotion of one class. to_class = null means "leaving school" (graduated). */

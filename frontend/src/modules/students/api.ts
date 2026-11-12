@@ -49,3 +49,13 @@ export function usePromote() {
     onSuccess: () => ["students", "classes"].forEach((key) => client.invalidateQueries({ queryKey: [key] })),
   });
 }
+
+/** Give a guardian or a student a username and password for the portal. kind = "guardians" | "students". */
+export function useCreateLogin(kind: "guardians" | "students") {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, username, password }: { id: number; username: string; password: string }) =>
+      api.post<{ username: string }>(`${BASE}/${kind}/${id}/login/`, { username, password }),
+    onSuccess: () => ["students", "guardians"].forEach((key) => client.invalidateQueries({ queryKey: [key] })),
+  });
+}

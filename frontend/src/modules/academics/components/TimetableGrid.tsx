@@ -1,13 +1,14 @@
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { Fragment } from "react";
 import { DAYS, type Period, type TimetableEntry } from "../types";
 
 interface Props {
   periods: Period[];
   entries: TimetableEntry[];
-  /** The small second line in each cell: the teacher (class view) or the class (teacher view). */
+  /** The small second line in each slot: the teacher (class view) or the class (teacher view). */
   detail: (entry: TimetableEntry) => string;
-  /** When given, lesson cells become clickable (admin editing). */
+  /** When given, slots become clickable (admin editing). */
   onCell?: (day: number, period: Period, entry?: TimetableEntry) => void;
   /** Weekday number to highlight, e.g. today. */
   highlightDay?: number;
@@ -15,9 +16,13 @@ interface Props {
 
 const hhmm = (time: string) => time.slice(0, 5);
 
-/** The weekly grid: periods down the side, Monday to Friday across the top. */
+/**
+ * Homeroom's Timetable: days across, periods down, each lesson a block in its subject's colour.
+ * Free periods are dashed outlines so the grid keeps its shape. The same grid shows a class's
+ * week or a teacher's week; only the second line of each slot changes.
+ */
 export function TimetableGrid({ periods, entries, detail, onCell, highlightDay }: Props) {
-  // Index lessons by "day-period" so each cell is one quick lookup instead of a search.
+  // Index lessons by "day-period" so each slot is one quick lookup instead of a search.
   const bySlot = new Map(entries.map((e) => [`${e.day}-${e.period}`, e]));
 
   if (!periods.length) {
@@ -26,55 +31,40 @@ export function TimetableGrid({ periods, entries, detail, onCell, highlightDay }
 
   return (
     <div className="overflow-x-auto">
-      <table className="hr-list table-fixed">
-        <thead>
-          <tr>
-            <th className="w-32">Period</th>
-            {/* Bus yellow marks "today", as it does on every Homeroom calendar. */}
-            {DAYS.map((d) => (
-              <th key={d.value} className={cn(d.value === highlightDay && "!bg-bus-soft !text-bus-ink")}>{d.label}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {periods.map((p) => (
-            <tr key={p.id} className="[&:hover>td]:!bg-transparent">
-              <td className="align-top">
-                <p className="font-bold">{p.name}</p>
-                <p className="font-mono text-sm text-ink-muted">{hhmm(p.start_time)}–{hhmm(p.end_time)}</p>
-              </td>
-              {p.is_break ? (
-                <td colSpan={DAYS.length} className="!bg-sunken text-center text-xs font-extrabold uppercase tracking-wider text-ink-muted">{p.name}</td>
-              ) : (
-                DAYS.map((d) => {
-                  const entry = bySlot.get(`${d.value}-${p.id}`);
-                  return (
-                    <td
-                      key={d.value}
-                      onClick={onCell ? () => onCell(d.value, p, entry) : undefined}
-                      className={cn(
-                        "h-16 border-l border-line !p-1 align-top",
-                        d.value === highlightDay && "!bg-bus-soft",
-                        onCell && "cursor-pointer hover:!bg-sunken",
-                      )}
-                    >
-                      {entry ? (
-                        // s-<group> sets --s and --s-soft: every subject keeps its own colour everywhere.
-                        <div className={`s-${entry.subject_group} h-full rounded-sm bg-(--s-soft) px-2 py-1`}>
-                          <p className="truncate font-bold text-(--s)">{entry.subject_name}</p>
-                          <p className="truncate text-sm text-ink-muted">{detail(entry)}{entry.room && ` · ${entry.room}`}</p>
-                        </div>
-                      ) : (
-                        onCell && <span className="px-2 text-sm text-ink-muted/60">+ add</span>
-                      )}
-                    </td>
-                  );
-                })
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {/* The design's first column is 56px; ours is wider because it also carries the period's name. */}
+      <div className="hr-tt min-w-[680px] !grid-cols-[92px_repeat(5,1fr)]">
+        <div />
+        {DAYS.map((d) => <div key={d.value} className={cn("h", d.value === highlightDay && "today")}>{d.label}</div>)}
+        {periods.map((p) => (
+          <Fragment key={p.id}>
+            <div className="tm">
+              <span className="block font-sans text-[13px] font-bold text-ink">{p.name}</span>
+              {hhmm(p.start_time)}–{hhmm(p.end_time)}
+            </div>
+            {p.is_break ? (
+              <div className="free col-span-5 grid place-items-center text-xs font-extrabold uppercase tracking-wider text-ink-muted">{p.name}</div>
+            ) : (
+              DAYS.map((d) => {
+                const entry = bySlot.get(`${d.value}-${p.id}`);
+                const click = onCell ? () => onCell(d.value, p, entry) : undefined;
+                // A <button> when it can be clicked (keyboard users can reach it), a plain box when it cannot.
+                const Box = onCell ? "button" : "div";
+                return entry ? (
+                  // s-<group> sets --s and --s-soft: every subject keeps its own colour everywhere.
+                  <Box key={d.value} type={onCell ? "button" : undefined} onClick={click} className={cn("slot text-left", `s-${entry.subject_group}`, onCell && "cursor-pointer hover:brightness-95")}>
+                    <b className="truncate">{entry.subject_name}</b>
+                    <span className="block truncate">{detail(entry)}{entry.room && ` · ${entry.room}`}</span>
+                  </Box>
+                ) : (
+                  <Box key={d.value} type={onCell ? "button" : undefined} onClick={click} aria-label={onCell ? `Add a lesson: ${d.label}, ${p.name}` : undefined} className={cn("free", onCell && "cursor-pointer text-ink-muted/60 hover:bg-sunken")}>
+                    {onCell && "+"}
+                  </Box>
+                );
+              })
+            )}
+          </Fragment>
+        ))}
+      </div>
     </div>
   );
 }

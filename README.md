@@ -36,12 +36,12 @@ Debugging a feature means opening exactly two folders.
 | 2  | students        | ✅      | Students, guardians, classes, enrolment, medical info, year-end promotion |
 | 3  | academics       | ✅      | Subjects, teacher assignments, periods, timetable, teacher's own timetable |
 | 4  | assessments     | ✅      | Markbook, question paper and marking scheme uploads, grading scale, weighted results, teacher comments, report cards, transcript |
-| 5  | attendance      | —       | Daily / per-lesson attendance                           |
-| 6  | fees            | —       | Fee structures, payment plans, late fees, invoices, payments, balances |
-| 7  | events          | —       | Calendar, announcements on the dashboard                |
-| 8  | communication   | —       | Messages and notices (in-app first)                     |
-| 9  | portal          | —       | Parent / student read-only views                        |
-| 10 | admissions      | —       | Online application form, document upload, review, convert to student |
+| 5  | attendance      | ✅      | Daily register (present / late / absent), term summary  |
+| 6  | fees            | ✅      | Fee structure, billing a class, instalments, late fees, payments, statements |
+| 7  | events          | ✅      | Calendar and notice board, shown on the Today screen    |
+| 8  | communication   | ✅      | Private in-app messages between staff and families      |
+| 9  | portal          | ✅      | Parent / student read-only views: results, attendance, fees, timetable |
+| 10 | admissions      | ✅      | Public application form at /apply, stages board, enrol as a student |
 
 ### Later, as we expand
 
@@ -60,6 +60,11 @@ Parked on purpose. Each one slots into an existing module when a school needs it
 | Staff attendance and leave      | new module     |
 
 Roles: `admin`, `teacher`, `parent`, `student` (one `User` table, `role` field).
+
+**Home is "Today"**, not a menu: a teacher sees today's lessons and what needs doing, the admin
+sees whole-school figures and what to chase, a parent sees each child's day. The grid of apps is
+behind the Apps button in the top bar. `portal` has no backend folder of its own: it only displays
+what the other modules' APIs already return for a family.
 
 ## Look and feel: the Homeroom design system
 
