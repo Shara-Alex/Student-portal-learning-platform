@@ -1,3 +1,4 @@
+import { EmptyRow } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
@@ -49,9 +50,7 @@ export function PeriodsTab({ canEdit }: { canEdit: boolean }) {
                 )}
               </tr>
             ))}
-            {!rows.length && (
-              <tr><td colSpan={5} className="!py-8 text-center text-ink-muted">{periods.isLoading ? "Loading…" : "No periods yet."}</td></tr>
-            )}
+            {!rows.length && <EmptyRow query={periods} colSpan={5}>No periods yet.</EmptyRow>}
           </tbody>
         </table>
       </div>
@@ -87,7 +86,7 @@ function PeriodForm({ period, onClose }: { period: Period | null; onClose: () =>
         {save.isError && <p className="text-sm text-marker">{errorText(save.error)}</p>}
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="default" onClick={onClose}>Cancel</Button>
-          <Button disabled={save.isPending}>{save.isPending ? "Saving…" : "Save"}</Button>
+          <Button busy={save.isPending}>Save</Button>
         </div>
       </form>
     </Modal>

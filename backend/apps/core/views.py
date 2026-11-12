@@ -7,6 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from .mixins import ProtectedDeleteMixin
@@ -15,12 +16,15 @@ from .permissions import IsAdmin, ReadOnlyOrAdmin, StaffReadAdminWrite
 from .serializers import (
     AcademicYearSerializer,
     ChangePasswordSerializer,
+    ForgotPasswordSerializer,
+    ResetPasswordSerializer,
     SchoolSerializer,
     SetPasswordSerializer,
     TermSerializer,
     UserAdminSerializer,
     UserSerializer,
 )
+from .services import fresh_tokens, send_reset_link
 
 
 class MeView(generics.RetrieveUpdateAPIView):
@@ -33,13 +37,55 @@ class MeView(generics.RetrieveUpdateAPIView):
 
 
 class ChangePasswordView(APIView):
-    """POST /api/auth/change-password/ {current_password, new_password}  Change your own password."""
+    """
+    POST /api/auth/change-password/ {current_password, new_password}  Change your own password.
+    Answers {access, refresh}: new login tokens, which the frontend must store in place of the old ones.
+    """
 
     def post(self, request):
         serializer = ChangePasswordSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         request.user.set_password(serializer.validated_data["new_password"])
         request.user.save(update_fields=["password"])
+        # Changing the password cancels every login token issued before it, on every device.
+        # Hand back a new pair so THIS device stays signed in.
+        return Response(fresh_tokens(request.user))
+
+
+class ForgotPasswordView(APIView):
+    """
+    POST /api/auth/forgot-password/ {identifier}   identifier = a username or an email address
+
+    Always answers 204, whether or not the account exists. Answering differently would let a
+    stranger test which usernames are real. Limited to 5 tries an hour per computer.
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "forgot_password"
+
+    def post(self, request):
+        serializer = ForgotPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        send_reset_link(serializer.validated_data["identifier"])
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ResetPasswordView(APIView):
+    """POST /api/auth/reset-password/ {uid, token, new_password}   uid and token come from the emailed link."""
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "reset_password"
+
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data["user"]
+        user.set_password(serializer.validated_data["new_password"])
+        user.save(update_fields=["password"])
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

@@ -52,3 +52,18 @@
   .hr-side, .hr-tabs, .hr-rail, .hr-foot, .hr-stripe, .hr-scrim { display: none !important; }
   .hr-main, .hr-page { display: block; overflow: visible; padding: 0; }
 }
+
+/* ---------- 3. Small rules that go with our React code ---------- */
+
+/* The rail's show/hide button is only useful where the rail can show. */
+@media (max-width: 1279px) {
+  .hr-tabs .rail-btn { display: none; }
+}
+
+/* Today lists notices and coming events itself, but not while the rail beside it is already showing them. */
+@media (min-width: 1280px) {
+  .hr-shell:not(.no-rail) .rail-has-this { display: none; }
+}
+
+/* A busy button is also disabled (so a form cannot be sent twice), but it should not fade like a locked one. */
+.hr-btn[aria-busy="true"][disabled] { opacity: 1; }

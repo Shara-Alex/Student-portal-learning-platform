@@ -80,7 +80,7 @@ export function PromoteForm({ fromClass, onClose }: { fromClass: SchoolClass; on
         {promote.isError && <p className="text-sm text-marker">{errorText(promote.error)}</p>}
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="default" onClick={onClose}>Cancel</Button>
-          <Button disabled={promote.isPending || !moving.length}>{promote.isPending ? "Working…" : `Promote ${moving.length}`}</Button>
+          <Button busy={promote.isPending} disabled={!moving.length}>{`Promote ${moving.length}`}</Button>
         </div>
       </form>
     </Modal>

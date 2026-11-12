@@ -111,7 +111,7 @@ class SettingsTests(TestCase):
         self.login("parent")
         url = "/api/auth/change-password/"
         self.assertEqual(self.client.post(url, {"current_password": "wrong", "new_password": "brandnew123"}).status_code, 400)
-        self.assertEqual(self.client.post(url, {"current_password": "pass1234", "new_password": "brandnew123"}).status_code, 204)
+        self.assertEqual(self.client.post(url, {"current_password": "pass1234", "new_password": "brandnew123"}).status_code, 200)
         self.client.credentials()
         self.login("parent", "brandnew123")
 
@@ -166,3 +166,110 @@ class SettingsTests(TestCase):
         self.assertEqual(term(y1, "Bad", "2026-05-01", "2026-04-01").status_code, 400)  # ends before it starts
         self.assertEqual(term(y1, "Bad", "2026-11-01", "2027-02-01").status_code, 400)  # outside its year
         self.assertEqual(term(y1, "Bad", "2026-03-01", "2026-05-01").status_code, 400)  # overlaps Term 1
+
+
+class AccountSafetyTests(TestCase):
+    """Sessions ending on a password change, forgot password, the school's time zone, and error replies."""
+
+    def setUp(self):
+        from django.core.cache import cache
+
+        cache.clear()  # the "5 tries an hour" counters live in the cache; start each test from zero
+        self.client = APIClient()
+        School.objects.create(name="Test High")
+        self.admin = User.objects.create_user("admin", password="pass1234", role="admin")
+        self.teacher = User.objects.create_user("teacher", password="pass1234", role="teacher", email="teacher@example.com")
+
+    def tokens(self, username, password="pass1234"):
+        r = self.client.post("/api/auth/login/", {"username": username, "password": password})
+        self.assertEqual(r.status_code, 200)
+        return r.data
+
+    def use(self, access):
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access)
+
+    # ---- a password change ends older sessions ------------------------------
+    def test_admin_reset_logs_the_user_out_everywhere(self):
+        old = self.tokens("teacher")
+        self.use(self.tokens("admin")["access"])
+        self.client.post(f"/api/core/users/{self.teacher.id}/set-password/", {"password": "brandnew123"})
+
+        self.use(old["access"])
+        self.assertEqual(self.client.get("/api/auth/me/").status_code, 401)  # the old login is dead
+        # the old refresh token can still mint an access token, but that one is dead too
+        self.client.credentials()
+        r = self.client.post("/api/auth/refresh/", {"refresh": old["refresh"]})
+        if r.status_code == 200:
+            self.use(r.data["access"])
+            self.assertEqual(self.client.get("/api/auth/me/").status_code, 401)
+
+    def test_changing_my_own_password_keeps_this_device_signed_in(self):
+        old = self.tokens("teacher")
+        self.use(old["access"])
+        r = self.client.post("/api/auth/change-password/", {"current_password": "pass1234", "new_password": "brandnew123"})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(self.client.get("/api/auth/me/").status_code, 401)  # old token
+        self.use(r.data["access"])
+        self.assertEqual(self.client.get("/api/auth/me/").status_code, 200)  # the new one it handed back
+
+    # ---- forgot password ------------------------------------------------------
+    def test_forgot_password_round_trip(self):
+        from django.core import mail
+
+        self.assertEqual(self.client.post("/api/auth/forgot-password/", {"identifier": "teacher"}).status_code, 204)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["teacher@example.com"])
+        link = [word for word in mail.outbox[0].body.split() if "reset-password?" in word][0]
+        uid, token = link.split("uid=")[1].split("&token=")
+
+        reset = lambda data: self.client.post("/api/auth/reset-password/", data)
+        self.assertEqual(reset({"uid": uid, "token": "wrong", "new_password": "brandnew123"}).status_code, 400)
+        self.assertEqual(reset({"uid": uid, "token": token, "new_password": "short"}).status_code, 400)
+        self.assertEqual(reset({"uid": uid, "token": token, "new_password": "brandnew123"}).status_code, 204)
+        self.tokens("teacher", "brandnew123")
+        # a link works once
+        self.assertEqual(reset({"uid": uid, "token": token, "new_password": "another12345"}).status_code, 400)
+
+    def test_forgot_password_never_says_whether_the_account_exists(self):
+        from django.core import mail
+
+        for who in ("nobody", "admin"):  # admin exists but has no email address
+            self.assertEqual(self.client.post("/api/auth/forgot-password/", {"identifier": who}).status_code, 204)
+        self.assertEqual(len(mail.outbox), 0)
+
+    # ---- time zone --------------------------------------------------------------
+    def test_school_time_zone(self):
+        self.use(self.tokens("admin")["access"])
+        self.assertEqual(self.client.get("/api/core/school/").data["time_zone"], "Africa/Harare")
+        r = self.client.patch("/api/core/school/", {"time_zone": "Africa/Lusaka"})
+        self.assertEqual(r.data["time_zone"], "Africa/Lusaka")
+        self.assertEqual(self.client.patch("/api/core/school/", {"time_zone": "Harare"}).status_code, 400)
+
+    # ---- error replies ------------------------------------------------------------
+    def test_a_crash_becomes_a_logged_500_with_a_reference(self):
+        from unittest.mock import patch
+
+        self.use(self.tokens("admin")["access"])
+        self.client.raise_request_exception = False
+        with patch("apps.core.views.School.current", side_effect=RuntimeError("boom")), self.assertLogs("school", "ERROR") as logs:
+            r = self.client.get("/api/core/school/")
+        self.assertEqual(r.status_code, 500)
+        self.assertIn(r.data["reference"], r.data["detail"])
+        self.assertIn(r.data["reference"], logs.output[0])
+        self.assertIn("admin (admin)", logs.output[0])
+
+    def test_a_database_clash_becomes_a_409(self):
+        from unittest.mock import patch
+
+        from django.db import IntegrityError
+
+        self.use(self.tokens("admin")["access"])
+        with patch("apps.core.views.School.current", side_effect=IntegrityError("duplicate")):
+            r = self.client.get("/api/core/school/")
+        self.assertEqual(r.status_code, 409)
+        self.assertIn("detail", r.data)
+
+    def test_unknown_api_address_answers_json(self):
+        r = self.client.get("/api/nothing-here/")
+        self.assertEqual(r.status_code, 404)
+        self.assertEqual(r["Content-Type"], "application/json")

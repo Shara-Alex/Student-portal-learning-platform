@@ -3,6 +3,7 @@
  * To add a module: create src/modules/<name>/, then add one entry here.
  * The sidebar, the apps menu, the tab bar and the router are all generated from this list.
  */
+import { ALL_STAFF, EVERYONE, FAMILY, FINANCE, OFFICE, TEACHING } from "@/lib/roles";
 import type { Section } from "@/lib/sections";
 import type { LucideIcon } from "lucide-react";
 import { BookOpen, CalendarDays, ClipboardCheck, ClipboardList, Mail, UserPlus, Users, Wallet } from "lucide-react";
@@ -48,18 +49,16 @@ export interface Module {
   sections: Section[];   // the app's pages, shown as tabs above the page
 }
 
-const STAFF: Role[] = ["admin", "teacher"];
-const EVERYONE: Role[] = ["admin", "teacher", "parent", "student"];
-
+// Who sees each app comes from the role groups in lib/roles.ts (the same groups the backend uses).
 // Order = order of the tiles. Teachers' daily tools first, the office last (a Homeroom rule).
 export const modules: Module[] = [
-  { name: "portal", label: "My children", studentLabel: "My school record", icon: Users, color: "board", page: PortalPage, roles: ["parent", "student"], group: "people", sections: portalSections },
-  { name: "attendance", label: "Attendance", icon: ClipboardCheck, color: "bus", page: AttendancePage, roles: STAFF, group: "classroom", sections: attendanceSections },
-  { name: "assessments", label: "Gradebook", icon: ClipboardList, color: "crayon", page: AssessmentsPage, roles: STAFF, group: "classroom", sections: assessmentsSections },
-  { name: "academics", label: "Academics", icon: BookOpen, color: "pen", page: AcademicsPage, roles: STAFF, group: "classroom", sections: academicsSections },
-  { name: "students", label: "Students", icon: Users, color: "board", page: StudentsPage, roles: STAFF, group: "people", sections: studentsSections },
+  { name: "portal", label: "My children", studentLabel: "My school record", icon: Users, color: "board", page: PortalPage, roles: FAMILY, group: "people", sections: portalSections },
+  { name: "attendance", label: "Attendance", icon: ClipboardCheck, color: "bus", page: AttendancePage, roles: TEACHING, group: "classroom", sections: attendanceSections },
+  { name: "assessments", label: "Gradebook", icon: ClipboardList, color: "crayon", page: AssessmentsPage, roles: TEACHING, group: "classroom", sections: assessmentsSections },
+  { name: "academics", label: "Academics", icon: BookOpen, color: "pen", page: AcademicsPage, roles: TEACHING, group: "classroom", sections: academicsSections },
+  { name: "students", label: "Students", icon: Users, color: "board", page: StudentsPage, roles: ALL_STAFF, group: "people", sections: studentsSections },
   { name: "communication", label: "Messages", icon: Mail, color: "pen", page: CommunicationPage, roles: EVERYONE, group: "people", sections: communicationSections },
   { name: "events", label: "Calendar", icon: CalendarDays, color: "board", page: EventsPage, roles: EVERYONE, group: "office", sections: eventsSections },
-  { name: "fees", label: "Fees", icon: Wallet, color: "marker", page: FeesPage, roles: ["admin"], group: "office", sections: feesSections },
-  { name: "admissions", label: "Admissions", icon: UserPlus, color: "crayon", page: AdmissionsPage, roles: ["admin"], group: "office", sections: admissionsSections },
+  { name: "fees", label: "Fees", icon: Wallet, color: "marker", page: FeesPage, roles: FINANCE, group: "office", sections: feesSections },
+  { name: "admissions", label: "Admissions", icon: UserPlus, color: "crayon", page: AdmissionsPage, roles: OFFICE, group: "office", sections: admissionsSections },
 ];

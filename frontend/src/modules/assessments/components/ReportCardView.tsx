@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SubjectTag } from "@/components/ui/subject-tag";
 import { ArrowLeft, Printer } from "lucide-react";
 import { useState } from "react";
@@ -27,6 +28,7 @@ export function ReportCardView({ student, term, onBack }: { student: number; ter
         <Button onClick={() => window.print()}><Printer size={16} /> Print</Button>
       </div>
 
+      {report.isLoading && <Skeleton />}
       {data && (
         <Card className="flex flex-wrap items-end justify-between gap-4">
           <div>

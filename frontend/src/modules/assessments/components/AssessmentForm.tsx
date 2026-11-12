@@ -91,7 +91,7 @@ export function AssessmentForm({ assessment, assignment, term, canEdit, onClose 
         <div className="flex justify-end gap-2 pt-2">
           {assessment && canEdit && <Button type="button" variant="danger" className="mr-auto" onClick={onDelete}>Delete</Button>}
           <Button type="button" variant="default" onClick={onClose}>{canEdit ? "Cancel" : "Close"}</Button>
-          {canEdit && <Button disabled={save.isPending}>{save.isPending ? "Saving…" : "Save"}</Button>}
+          {canEdit && <Button busy={save.isPending}>Save</Button>}
         </div>
       </form>
     </Modal>

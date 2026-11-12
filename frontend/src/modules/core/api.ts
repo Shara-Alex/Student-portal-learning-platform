@@ -13,6 +13,17 @@ export function logout() {
   window.location.href = "/login";
 }
 
+/**
+ * Where the school logo lives. It needs no login, so a plain <img> can show it.
+ * Browsers keep a copy of pictures; the number on the end changes after an upload
+ * (bumpLogo) so the browser fetches the new picture instead of showing its old copy.
+ */
+let logoVersion = 0;
+export const schoolLogoUrl = () => `/api/core/school/logo/?v=${logoVersion}`;
+export const bumpLogo = () => {
+  logoVersion = Date.now();
+};
+
 // Hooks: components call these; TanStack Query caches and refetches for us.
 export const useMe = () =>
   useQuery({ queryKey: ["me"], queryFn: () => api.get<User>("/api/auth/me/"), enabled: auth.isLoggedIn() });

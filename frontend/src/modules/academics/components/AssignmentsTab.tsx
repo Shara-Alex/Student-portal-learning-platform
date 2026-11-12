@@ -1,3 +1,4 @@
+import { EmptyRow } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
@@ -59,9 +60,7 @@ export function AssignmentsTab({ canEdit }: { canEdit: boolean }) {
                 )}
               </tr>
             ))}
-            {!rows.length && (
-              <tr><td colSpan={4} className="!py-8 text-center text-ink-muted">{assignments.isLoading ? "Loading…" : "Nothing assigned yet."}</td></tr>
-            )}
+            {!rows.length && <EmptyRow query={assignments} colSpan={4}>Nothing assigned yet.</EmptyRow>}
           </tbody>
         </table>
       </div>
@@ -111,7 +110,7 @@ function AssignmentForm({ assignment, defaultClass, onClose }: { assignment: Tea
         {save.isError && <p className="text-sm text-marker">{errorText(save.error)}</p>}
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="default" onClick={onClose}>Cancel</Button>
-          <Button disabled={save.isPending}>{save.isPending ? "Saving…" : "Save"}</Button>
+          <Button busy={save.isPending}>Save</Button>
         </div>
       </form>
     </Modal>

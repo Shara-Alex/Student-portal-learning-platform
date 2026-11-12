@@ -1,3 +1,4 @@
+import { EmptyRow } from "@/components/ui/skeleton";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -45,7 +46,7 @@ export function MessagesTab({ box }: { box: "inbox" | "sent" }) {
                 </tr>
               );
             })}
-            {!rows.length && <tr><td colSpan={3} className="!py-8 text-center text-ink-muted">{messages.isLoading ? "Loading…" : inbox ? "No messages yet." : "You have not sent any messages."}</td></tr>}
+            {!rows.length && <EmptyRow query={messages} colSpan={3}>{inbox ? "No messages yet." : "You have not sent any messages."}</EmptyRow>}
           </tbody>
         </table>
       </div>
@@ -122,7 +123,7 @@ function Compose({ draft, onClose }: { draft: Draft; onClose: () => void }) {
         {send.isError && <p className="text-sm text-marker">{errorText(send.error)}</p>}
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="default" onClick={onClose}>Cancel</Button>
-          <Button disabled={send.isPending || !to}>{send.isPending ? "Sending…" : "Send"}</Button>
+          <Button busy={send.isPending} disabled={!to}>Send</Button>
         </div>
       </form>
     </Modal>

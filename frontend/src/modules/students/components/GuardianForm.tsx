@@ -60,7 +60,7 @@ export function GuardianForm({ guardian, onClose, onSaved }: Props) {
         {save.isError && <p className="col-span-2 text-sm text-marker">{errorText(save.error)}</p>}
         <div className="col-span-2 mt-2 flex justify-end gap-2">
           <Button type="button" variant="default" onClick={onClose}>Cancel</Button>
-          <Button disabled={save.isPending}>{save.isPending ? "Saving…" : "Save"}</Button>
+          <Button busy={save.isPending}>Save</Button>
         </div>
       </form>
       {guardian && <LoginBox kind="guardians" id={guardian.id} username={guardian.username} who="guardian" />}

@@ -1,3 +1,4 @@
+import { EmptyRow } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
@@ -56,9 +57,7 @@ export function ClassesTab({ canEdit }: { canEdit: boolean }) {
                 )}
               </tr>
             ))}
-            {!rows.length && (
-              <tr><td colSpan={5} className="!py-8 text-center text-ink-muted">{classes.isLoading ? "Loading…" : "No classes yet."}</td></tr>
-            )}
+            {!rows.length && <EmptyRow query={classes} colSpan={5}>No classes yet.</EmptyRow>}
           </tbody>
         </table>
       </div>
@@ -97,7 +96,7 @@ function ClassForm({ schoolClass, onClose }: { schoolClass: SchoolClass | null; 
         {save.isError && <p className="text-sm text-marker">{errorText(save.error)}</p>}
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="default" onClick={onClose}>Cancel</Button>
-          <Button disabled={save.isPending}>{save.isPending ? "Saving…" : "Save"}</Button>
+          <Button busy={save.isPending}>Save</Button>
         </div>
       </form>
     </Modal>

@@ -1,3 +1,4 @@
+import { EmptyRow } from "@/components/ui/skeleton";
 import { Select } from "@/components/ui/select";
 import { SubjectTag } from "@/components/ui/subject-tag";
 import { PageHeader } from "@/components/ui/page-header";
@@ -47,9 +48,7 @@ export function SubjectsTab({ canEdit }: { canEdit: boolean }) {
                 )}
               </tr>
             ))}
-            {!rows.length && (
-              <tr><td colSpan={4} className="!py-8 text-center text-ink-muted">{subjects.isLoading ? "Loading…" : "No subjects yet."}</td></tr>
-            )}
+            {!rows.length && <EmptyRow query={subjects} colSpan={4}>No subjects yet.</EmptyRow>}
           </tbody>
         </table>
       </div>
@@ -84,7 +83,7 @@ function SubjectForm({ subject, onClose }: { subject: Subject | null; onClose: (
         {save.isError && <p className="text-sm text-marker">{errorText(save.error)}</p>}
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="default" onClick={onClose}>Cancel</Button>
-          <Button disabled={save.isPending}>{save.isPending ? "Saving…" : "Save"}</Button>
+          <Button busy={save.isPending}>Save</Button>
         </div>
       </form>
     </Modal>

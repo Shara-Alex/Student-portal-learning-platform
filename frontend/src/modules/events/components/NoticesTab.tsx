@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { PageHeader } from "@/components/ui/page-header";
 import { Select } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { errorText } from "@/lib/api";
 import { Plus } from "lucide-react";
@@ -42,7 +43,8 @@ export function NoticesTab({ canEdit }: { canEdit: boolean }) {
         {canEdit && <Button onClick={() => setEditing(null)}><Plus size={16} /> Post a notice</Button>}
       </PageHeader>
       {rows.map((n) => <NoticeCard key={n.id} notice={n} onClick={canEdit ? () => setEditing(n) : undefined} />)}
-      {!rows.length && <Card className="text-ink-muted">{notices.isLoading ? "Loading…" : "No notices at the moment."}</Card>}
+      {notices.isLoading && <Skeleton title={false} />}
+      {!rows.length && !notices.isLoading && <Card className="text-ink-muted">No notices at the moment.</Card>}
       {editing !== undefined && <NoticeForm notice={editing} onClose={() => setEditing(undefined)} />}
     </div>
   );
@@ -77,7 +79,7 @@ function NoticeForm({ notice, onClose }: { notice: Announcement | null; onClose:
         <div className="flex justify-end gap-2 pt-2">
           {notice && <Button type="button" variant="danger" className="mr-auto" onClick={() => window.confirm("Delete this notice?") && remove.mutate(notice.id, { onSuccess: onClose })}>Delete</Button>}
           <Button type="button" variant="default" onClick={onClose}>Cancel</Button>
-          <Button disabled={save.isPending}>{save.isPending ? "Saving…" : notice ? "Save" : "Post"}</Button>
+          <Button busy={save.isPending}>{notice ? "Save" : "Post"}</Button>
         </div>
       </form>
     </Modal>

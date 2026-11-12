@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card";
+import { ALL_STAFF, inGroup } from "@/lib/roles";
 import { daysUntil } from "@/lib/term";
 import { useSubjects } from "@/modules/academics/api";
 import { dateRange, useAnnouncements, useEvents } from "@/modules/events/api";
@@ -21,13 +22,13 @@ const heading = (text: string) => <h2 className="text-xs font-extrabold uppercas
 /**
  * Home is "Today" (Homeroom's rule: start from the day, not the database).
  * Each role gets its own: teachers their lessons and jobs, the admin whole-school figures,
- * families their children. The grid of apps is one click away in the top bar.
+ * the bursar and front office their own jobs, families their children. The apps are in the sidebar.
  */
 export function HomePage() {
   const me = useMe();
   const school = useSchool();
   const role = me.data?.role;
-  const isStaff = role === "admin" || role === "teacher";
+  const isStaff = inGroup(role, ALL_STAFF);
 
   return (
     <div className="space-y-6">
@@ -55,9 +56,12 @@ export function HomePage() {
       )}
       {role && !isStaff && <FamilyToday />}
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Notices />
-        <ComingUp />
+      {/* On wide screens the rail on the right already shows these two, so they hide here (styles/app.css). */}
+      <div className="rail-has-this">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Notices />
+          <ComingUp />
+        </div>
       </div>
     </div>
   );

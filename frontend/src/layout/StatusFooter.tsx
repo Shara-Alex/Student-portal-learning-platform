@@ -1,8 +1,9 @@
+import { useOnline } from "@/lib/online";
 import { useCurrentPeriod, useSchoolTimeZone } from "@/lib/schoolDay";
 import { currentTerm, termAndWeek } from "@/lib/term";
-import { useMe, useSchool, useTerms } from "@/modules/core/api";
-import { useStudents } from "@/modules/students/api";
+import { useSchool, useTerms } from "@/modules/core/api";
 import { useEffect, useState } from "react";
+import { useMyDay } from "./useMyDay";
 
 /**
  * Homeroom's StatusFooter: a 32px bar for glancing, never clicking.
@@ -10,19 +11,12 @@ import { useEffect, useState } from "react";
  * Right: a live clock. On phones the school name and version hide; the clock always stays.
  */
 export function StatusFooter() {
-  const me = useMe();
   const school = useSchool();
   const terms = useTerms();
   const online = useOnline();
   const timeZone = useSchoolTimeZone();
-  const role = me.data?.role;
-  // A student's own record, to know their class. Nobody else asks for it.
-  const self = useStudents({}, role === "student");
-  const ownClass = self.data?.results[0]?.current_class;
-
   // Whose lesson to show: a teacher's own, or a student's class. Others see just the period.
-  const filters = role === "teacher" ? { teacher: "me" } : role === "student" && ownClass ? { school_class: String(ownClass) } : null;
-  const now = useCurrentPeriod(filters, timeZone);
+  const now = useCurrentPeriod(useMyDay(), timeZone);
   const where = termAndWeek(currentTerm(terms.data?.results));
 
   return (
@@ -59,20 +53,4 @@ function Clock({ timeZone }: { timeZone?: string }) {
   const day = now.toLocaleDateString("en-GB", { timeZone, weekday: "short", day: "numeric", month: "short" });
   const time = now.toLocaleTimeString("en-GB", { timeZone });
   return <span className="clock">{day} · {time}</span>;
-}
-
-/** True while the browser has a network connection. The browser tells us when that changes. */
-function useOnline() {
-  const [online, setOnline] = useState(navigator.onLine);
-  useEffect(() => {
-    const up = () => setOnline(true);
-    const down = () => setOnline(false);
-    window.addEventListener("online", up);
-    window.addEventListener("offline", down);
-    return () => {
-      window.removeEventListener("online", up);
-      window.removeEventListener("offline", down);
-    };
-  }, []);
-  return online;
 }

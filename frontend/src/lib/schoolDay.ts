@@ -3,16 +3,18 @@
  * Used by the status footer (and, next, the "Right now" card in the rail).
  */
 import { usePeriods, useTimetable, type Filters } from "@/modules/academics/api";
+import type { Period } from "@/modules/academics/types";
+import { useSchool } from "@/modules/core/api";
 import { useEffect, useState } from "react";
 
 /**
  * The school's time zone, e.g. "Africa/Harare".
  * The design wants the school's clock, not the phone's, so a phone set to the wrong zone
- * still shows the right period. The backend has been asked to send the zone with /api/core/school/.
- * Until it does, this is undefined, which means "use the device's own zone".
+ * still shows the right period. The zone comes with /api/core/school/.
+ * If it is missing, this is undefined, which means "use the device's own zone".
  */
 export function useSchoolTimeZone(): string | undefined {
-  return undefined;
+  return useSchool().data?.time_zone || undefined;
 }
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -40,6 +42,7 @@ const seconds = (time: string) => {
  * The period on right now, and the lesson in it for whoever `filters` names
  * ({teacher: "me"} or {school_class: "3"}). Pass null to skip the lesson and get only the period.
  * Returns null on weekends, before the first period and after the last.
+ * Also says how far through the period we are (percent) and what comes next.
  * It looks again every minute, so "12 min left" counts down by itself.
  */
 export function useCurrentPeriod(filters: Filters | null, timeZone?: string) {
@@ -53,10 +56,22 @@ export function useCurrentPeriod(filters: Filters | null, timeZone?: string) {
   }, []);
 
   const { weekday, time } = nowAt(timeZone);
-  if (weekday < 1 || weekday > 5 || !periods.data) return null;
-  const period = periods.data.find((p) => time >= p.start_time && time < p.end_time);
-  if (!period) return null;
-  const lesson = lessons.data?.find((e) => e.day === weekday && e.period === period.id);
-  const minutesLeft = Math.ceil((seconds(period.end_time) - seconds(time)) / 60);
-  return { period, lesson, minutesLeft };
+  const list = periods.data; // the API sends periods in the order of the school day
+  if (weekday < 1 || weekday > 5 || !list) return null;
+  const index = list.findIndex((p) => time >= p.start_time && time < p.end_time);
+  if (index < 0) return null;
+
+  const period = list[index];
+  const lessonIn = (p: Period) => lessons.data?.find((e) => e.day === weekday && e.period === p.id);
+  const start = seconds(period.start_time);
+  const end = seconds(period.end_time);
+  const at = seconds(time);
+  const following = list[index + 1]; // undefined after the last period of the day
+  return {
+    period,
+    lesson: lessonIn(period),
+    minutesLeft: Math.ceil((end - at) / 60),
+    percent: ((at - start) / (end - start)) * 100,
+    next: following ? { period: following, lesson: lessonIn(following) } : null,
+  };
 }

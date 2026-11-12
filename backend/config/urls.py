@@ -18,3 +18,7 @@ urlpatterns = [
     path("api/communication/", include("apps.communication.urls")),
     path("api/admissions/", include("apps.admissions.urls")),
 ]
+
+# What to answer for an unknown address, or a crash outside the API views (used when DEBUG is off).
+handler404 = "apps.core.exceptions.not_found"
+handler500 = "apps.core.exceptions.server_error"

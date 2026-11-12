@@ -1,3 +1,4 @@
+import { EmptyRow } from "@/components/ui/skeleton";
 import { TermPicker } from "@/components/TermPicker";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -45,7 +46,7 @@ export function StructureTab() {
                 </td>
               </tr>
             ))}
-            {!rows.length && <tr><td colSpan={4} className="!py-8 text-center text-ink-muted">{fees.isLoading ? "Loading…" : "No fees set for this term yet."}</td></tr>}
+            {!rows.length && <EmptyRow query={fees} colSpan={4}>No fees set for this term yet.</EmptyRow>}
           </tbody>
         </table>
       </div>
@@ -102,7 +103,7 @@ function FeeForm({ fee, term, onClose }: { fee: Fee | null; term: string; onClos
         {save.isError && <p className="text-sm text-marker">{errorText(save.error)}</p>}
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="default" onClick={onClose}>Cancel</Button>
-          <Button disabled={save.isPending}>{save.isPending ? "Saving…" : "Save"}</Button>
+          <Button busy={save.isPending}>Save</Button>
         </div>
       </form>
     </Modal>

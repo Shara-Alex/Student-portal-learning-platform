@@ -7,6 +7,7 @@ core: the foundation every other module depends on.
 - Term          e.g. Term 1 of 2026; marks, attendance and fees hang off a term
 """
 from django.contrib.auth.models import AbstractUser
+from django.conf import settings
 from django.db import models
 
 
@@ -20,6 +21,11 @@ class TimeStamped(models.Model):
         abstract = True
 
 
+def default_time_zone():
+    """New schools start in the server's zone (TIME_ZONE in settings.py)."""
+    return settings.TIME_ZONE
+
+
 class School(TimeStamped):
     name = models.CharField(max_length=200)
     motto = models.CharField(max_length=200, blank=True)
@@ -28,6 +34,8 @@ class School(TimeStamped):
     email = models.EmailField(blank=True)
     logo = models.ImageField(upload_to="school/", blank=True, null=True)
     currency = models.CharField(max_length=3, default="USD")
+    # An IANA zone name such as "Africa/Harare" or "Africa/Lusaka". The frontend shows clocks and "today" in it.
+    time_zone = models.CharField(max_length=64, default=default_time_zone)
 
     def __str__(self):
         return self.name

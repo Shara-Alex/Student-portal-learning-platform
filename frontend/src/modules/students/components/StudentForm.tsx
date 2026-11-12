@@ -109,7 +109,7 @@ export function StudentForm({ student, onClose }: { student: Student | null; onC
       <div className="mt-5 flex justify-end gap-2">
         <Button type="button" variant="default" onClick={onClose}>Cancel</Button>
         {/* form="student-form" links this button to the form above even though it sits outside it. */}
-        <Button form="student-form" disabled={save.isPending}>{save.isPending ? "Saving…" : "Save"}</Button>
+        <Button form="student-form" busy={save.isPending}>Save</Button>
       </div>
     </Modal>
   );

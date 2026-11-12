@@ -1,5 +1,6 @@
 // Mirrors backend/apps/core/serializers.py. Keep them in sync.
-export type Role = "admin" | "teacher" | "parent" | "student";
+// Six fixed roles. What each may do is grouped in lib/roles.ts.
+export type Role = "admin" | "teacher" | "bursar" | "front_office" | "parent" | "student";
 
 export interface User {
   id: number;
@@ -19,8 +20,9 @@ export interface School {
   address: string;
   phone: string;
   email: string;
-  logo: string | null;
   currency: string;
+  has_logo: boolean;  // the picture itself is at /api/core/school/logo/ (see schoolLogoUrl in api.ts)
+  time_zone?: string; // e.g. "Africa/Harare". Optional until the backend confirms it sends this.
 }
 
 export interface Term {

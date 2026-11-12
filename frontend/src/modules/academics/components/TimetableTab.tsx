@@ -82,7 +82,7 @@ function LessonForm({ classId, slot, onClose }: { classId: string; slot: Slot; o
             </Button>
           )}
           <Button type="button" variant="default" onClick={onClose}>Cancel</Button>
-          <Button disabled={save.isPending}>{save.isPending ? "Saving…" : "Save"}</Button>
+          <Button busy={save.isPending}>Save</Button>
         </div>
       </form>
     </Modal>

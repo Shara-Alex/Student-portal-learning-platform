@@ -42,7 +42,7 @@ export function LoginPage() {
           <Field label="Username"><Input value={username} onChange={(e) => setUsername(e.target.value)} autoFocus autoComplete="username" /></Field>
           <Field label="Password"><Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" /></Field>
           {error && <p className="text-sm text-marker">{error}</p>}
-          <Button className="mt-2 w-full" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</Button>
+          <Button className="mt-2 w-full" busy={busy}>Sign in</Button>
         </form>
       </div>
     </div>

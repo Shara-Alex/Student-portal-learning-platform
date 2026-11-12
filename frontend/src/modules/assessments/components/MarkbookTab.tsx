@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { Select } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SubjectTag } from "@/components/ui/subject-tag";
 import { errorText } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -57,6 +58,7 @@ export function MarkbookTab() {
         </Card>
       )}
 
+      {book.isLoading && <Skeleton rows={5} title={false} />}
       {book.data && (
         <Grid book={book.data} term={Number(term)} canEdit={canEdit} onEditAssessment={setEditing} />
       )}

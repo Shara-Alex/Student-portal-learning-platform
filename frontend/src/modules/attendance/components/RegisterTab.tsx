@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
 import { Select } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { errorText } from "@/lib/api";
 import { useClasses } from "@/modules/students/api";
 import { useState } from "react";
@@ -38,6 +39,7 @@ export function RegisterTab() {
         </Select>
         <Input className="w-44" type="date" aria-label="Date" max={today()} value={date} onChange={(e) => setDate(e.target.value || today())} />
       </div>
+      {register.isLoading && <Skeleton rows={5} title={false} />}
       {/* key: a different class or day is a different register, so start its buttons afresh */}
       {register.data && <Grid key={`${classId}-${date}-${register.dataUpdatedAt}`} register={register.data} classId={classId} date={date} />}
     </div>
@@ -84,10 +86,10 @@ function Grid({ register, classId, date }: { register: Register; classId: string
       {save.isError && <p className="text-sm text-marker">{errorText(save.error)}</p>}
       {register.can_mark ? (
         <Button
-          disabled={save.isPending}
+          busy={save.isPending}
           onClick={() => save.mutate({ schoolClass: classId, date, entries: register.rows.map((r) => ({ student: r.student, status: marks[r.student] })) })}
         >
-          {save.isPending ? "Saving…" : register.submitted ? "Save changes" : "Submit register"}
+          {register.submitted ? "Save changes" : "Submit register"}
         </Button>
       ) : (
         <p className="text-sm text-ink-muted">Only this class's teachers can mark its register.</p>

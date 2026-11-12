@@ -81,7 +81,7 @@ export function ApplyPage() {
 
             {apply.isError && <p className="col-span-2 text-sm text-marker">{errorText(apply.error)}</p>}
             <div className="col-span-2 mt-2 flex justify-end">
-              <Button disabled={apply.isPending}>{apply.isPending ? "Sending…" : "Send application"}</Button>
+              <Button busy={apply.isPending}>Send application</Button>
             </div>
           </form>
         )}

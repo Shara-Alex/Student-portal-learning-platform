@@ -95,7 +95,7 @@ function PaymentForm({ invoice }: { invoice: Invoice }) {
         <Field label="Receipt or reference"><Input value={reference} onChange={(e) => setReference(e.target.value)} /></Field>
       </div>
       {record.isError && <p className="text-sm text-marker">{errorText(record.error)}</p>}
-      <div className="flex justify-end"><Button disabled={record.isPending}>{record.isPending ? "Saving…" : "Record payment"}</Button></div>
+      <div className="flex justify-end"><Button busy={record.isPending}>Record payment</Button></div>
     </form>
   );
 }

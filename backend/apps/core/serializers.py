@@ -1,4 +1,6 @@
 """Serializers turn model rows into JSON for the frontend and validate JSON coming back."""
+from zoneinfo import available_timezones
+
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
@@ -120,6 +122,33 @@ class ChangePasswordSerializer(serializers.Serializer):
         return check_password_rules(value, self.context["request"].user)
 
 
+class ForgotPasswordSerializer(serializers.Serializer):
+    """Step 1 of 'forgot password': who are you? A username or an email address."""
+
+    identifier = serializers.CharField()
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    """Step 2: the two codes from the emailed link, plus the new password."""
+
+    uid = serializers.CharField()
+    token = serializers.CharField()
+    new_password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        from .services import user_from_reset_link  # imported here: services imports this module's neighbours
+
+        user = user_from_reset_link(data["uid"], data["token"])
+        if user is None:
+            raise serializers.ValidationError("This reset link is no longer valid. Ask for a new one.")
+        try:
+            check_password_rules(data["new_password"], user)
+        except serializers.ValidationError as error:
+            raise serializers.ValidationError({"new_password": error.detail})
+        data["user"] = user
+        return data
+
+
 class SchoolSerializer(serializers.ModelSerializer):
     # The logo goes IN here. It comes OUT through /api/core/school/logo/ (see views.py).
     logo = serializers.ImageField(write_only=True, required=False, allow_null=True)
@@ -127,7 +156,7 @@ class SchoolSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = School
-        fields = ["id", "name", "motto", "address", "phone", "email", "logo", "has_logo", "currency"]
+        fields = ["id", "name", "motto", "address", "phone", "email", "logo", "has_logo", "currency", "time_zone"]
 
     def get_has_logo(self, obj):
         return bool(obj.logo)
@@ -141,6 +170,11 @@ class SchoolSerializer(serializers.ModelSerializer):
         value = value.strip().upper()
         if len(value) != 3 or not value.isalpha():
             raise serializers.ValidationError("Use the three-letter code, such as USD, ZWG or ZMW.")
+        return value
+
+    def validate_time_zone(self, value):
+        if value not in available_timezones():
+            raise serializers.ValidationError("Use a zone name such as Africa/Harare or Africa/Lusaka.")
         return value
 
     def update(self, instance, validated_data):

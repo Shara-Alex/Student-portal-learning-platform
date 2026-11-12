@@ -3,7 +3,7 @@ import { useSections } from "@/lib/sections";
 import { theme, type Theme } from "@/lib/theme";
 import { logout, useMe } from "@/modules/core/api";
 import { modules } from "@/modules/registry";
-import { LogOut, Menu, Moon, Sun } from "lucide-react";
+import { LogOut, Menu, Moon, PanelRightClose, PanelRightOpen, Sun } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 
@@ -12,7 +12,7 @@ import { Link, useLocation, useSearchParams } from "react-router-dom";
  * then your tools on the right. Sidebar = which app; tabs = which page of it.
  * The bus-yellow stripe sits above this bar, on the shell itself.
  */
-export function TabsBar({ onMenu }: { onMenu: () => void }) {
+export function TabsBar({ onMenu, railOpen, onRail }: { onMenu: () => void; railOpen: boolean; onRail: () => void }) {
   const me = useMe();
   const { pathname } = useLocation();
   const [params] = useSearchParams();
@@ -32,7 +32,7 @@ export function TabsBar({ onMenu }: { onMenu: () => void }) {
   const name = me.data?.full_name || me.data?.username || "";
   const title = current
     ? (me.data?.role === "student" && current.studentLabel) || current.label
-    : pathname === "/apps" ? "Apps" : "Today";
+    : pathname === "/apps" ? "Apps" : pathname === "/" ? "Today" : "";
 
   return (
     <div className="hr-tabs">
@@ -57,6 +57,10 @@ export function TabsBar({ onMenu }: { onMenu: () => void }) {
         </nav>
       )}
       <div className="tools">
+        {/* Wide screens only (styles/app.css): shows or hides the at-a-glance rail on the right. */}
+        <button type="button" onClick={onRail} className="hr-iconbtn rail-btn" aria-label={railOpen ? "Hide the at-a-glance panel" : "Show the at-a-glance panel"}>
+          {railOpen ? <PanelRightClose /> : <PanelRightOpen />}
+        </button>
         <button type="button" onClick={toggleTheme} className="hr-iconbtn" aria-label={mode === "paper" ? "Switch to the dark chalkboard theme" : "Switch to the light paper theme"}>
           {mode === "paper" ? <Moon /> : <Sun />}
         </button>

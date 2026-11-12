@@ -1,3 +1,4 @@
+import { EmptyRow } from "@/components/ui/skeleton";
 import { Avatar } from "@/components/ui/avatar";
 import { PageHeader } from "@/components/ui/page-header";
 import { Select } from "@/components/ui/select";
@@ -49,9 +50,7 @@ export function ReportsTab() {
                 <td className="num font-bold">{r.grade || "—"}</td>
               </tr>
             ))}
-            {!rows.length && (
-              <tr><td colSpan={5} className="!py-8 text-center text-ink-muted">{results.isLoading ? "Loading…" : "No students in this class."}</td></tr>
-            )}
+            {!rows.length && <EmptyRow query={results} colSpan={5}>No students in this class.</EmptyRow>}
           </tbody>
         </table>
       </div>

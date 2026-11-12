@@ -149,7 +149,7 @@ function EnrolForm({ application, onDone, onCancel }: { application: Application
       {enrol.isError && <p className="text-sm text-marker">{errorText(enrol.error)}</p>}
       <div className="flex justify-end gap-2">
         <Button type="button" variant="default" onClick={onCancel}>Back</Button>
-        <Button disabled={enrol.isPending}>{enrol.isPending ? "Enrolling…" : "Enrol"}</Button>
+        <Button busy={enrol.isPending}>Enrol</Button>
       </div>
     </form>
   );

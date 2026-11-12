@@ -1,3 +1,4 @@
+import { EmptyRow } from "@/components/ui/skeleton";
 import { Avatar } from "@/components/ui/avatar";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
@@ -55,9 +56,7 @@ export function GuardiansTab({ canEdit }: { canEdit: boolean }) {
                 )}
               </tr>
             ))}
-            {!rows.length && (
-              <tr><td colSpan={5} className="!py-8 text-center text-ink-muted">{guardians.isLoading ? "Loading…" : "No guardians found."}</td></tr>
-            )}
+            {!rows.length && <EmptyRow query={guardians} colSpan={5}>No guardians found.</EmptyRow>}
           </tbody>
         </table>
       </div>

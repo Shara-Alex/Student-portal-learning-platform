@@ -1,9 +1,11 @@
+import { FINANCE, inGroup, OFFICE, TEACHING } from "@/lib/roles";
 import { currentTerm } from "@/lib/term";
 import { useApplications } from "@/modules/admissions/api";
 import { useOutstanding } from "@/modules/assessments/api";
 import { useMyRegisters } from "@/modules/attendance/api";
 import { useUnreadCount } from "@/modules/communication/api";
 import { useFeeSummary } from "@/modules/fees/api";
+import type { CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import { useTerms } from "../api";
 import type { Role } from "../types";
@@ -19,15 +21,15 @@ interface Todo {
 
 /** Homeroom's to-do list: what needs doing now, each with one button. Finished items get a red tick. */
 export function TodoList({ role }: { role: Role }) {
-  const isStaff = role === "admin" || role === "teacher";
   const isAdmin = role === "admin";
+  const teaches = inGroup(role, TEACHING);
   const term = currentTerm(useTerms().data?.results);
   // Each list is only asked for if this role is allowed to see it.
-  const registers = useMyRegisters(isStaff);
-  const marks = useOutstanding(isStaff);
+  const registers = useMyRegisters(teaches);
+  const marks = useOutstanding(teaches);
   const unread = useUnreadCount();
-  const applications = useApplications(isAdmin);
-  const fees = useFeeSummary(term ? String(term.id) : "", isAdmin);
+  const applications = useApplications(inGroup(role, OFFICE));
+  const fees = useFeeSummary(term ? String(term.id) : "", inGroup(role, FINANCE));
 
   const todos: Todo[] = [];
   if (isAdmin) {
@@ -66,9 +68,10 @@ export function TodoList({ role }: { role: Role }) {
     );
   }
   return (
-    <div className="space-y-2">
-      {todos.map((t) => (
-        <div key={t.key} className={`hr-todo ${t.done ? "done" : ""}`}>
+    // hr-stagger: the items arrive one after another, 40ms apart. --i is each item's place in the queue (capped at 8).
+    <div className="hr-stagger space-y-2">
+      {todos.map((t, i) => (
+        <div key={t.key} className={`hr-todo ${t.done ? "done" : ""}`} style={{ "--i": Math.min(i, 8) } as CSSProperties}>
           {t.done && <span className="hr-tick" aria-hidden="true">✓</span>}
           <div className="what"><b>{t.title}</b><span>{t.done ? "Done" : t.detail}</span></div>
           <Link to={t.to} className={`hr-btn ${t.done ? "" : "hr-btn-primary"}`}>{t.done ? "View" : t.action}</Link>

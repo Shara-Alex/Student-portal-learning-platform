@@ -1,7 +1,8 @@
+import { ALL_STAFF, inGroup, OFFICE, TEACHING } from "@/lib/roles";
 import { useApplications } from "@/modules/admissions/api";
 import { useMyRegisters } from "@/modules/attendance/api";
 import { useUnreadCount } from "@/modules/communication/api";
-import { useMe, useSchool } from "@/modules/core/api";
+import { schoolLogoUrl, useMe, useSchool } from "@/modules/core/api";
 import { GROUPS, modules, type Module } from "@/modules/registry";
 import { GraduationCap, LayoutGrid, PanelLeftClose, PanelLeftOpen, Sun, type LucideIcon } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
@@ -17,7 +18,7 @@ export function Sidebar({ collapsed, onCollapse }: { collapsed: boolean; onColla
   const { pathname } = useLocation();
   const counts = useCounts();
   const role = me.data?.role;
-  const isStaff = role === "admin" || role === "teacher";
+  const isStaff = inGroup(role, ALL_STAFF);
   const mine = modules.filter((m) => role && m.roles.includes(role));
   const label = (m: Module) => (role === "student" && m.studentLabel) || m.label;
   const item = (m: Module) => (
@@ -28,7 +29,7 @@ export function Sidebar({ collapsed, onCollapse }: { collapsed: boolean; onColla
     <aside className="hr-side" aria-label="Apps">
       <div className="school">
         <span className="hr-logo-slot" title="School logo">
-          {school.data?.logo ? <img src={school.data.logo} alt="" className="size-8 rounded-sm object-cover" /> : <GraduationCap />}
+          {school.data?.has_logo ? <img src={schoolLogoUrl()} alt="" className="size-8 rounded-sm object-cover" /> : <GraduationCap />}
         </span>
         <div className="min-w-0">
           <b className="block truncate">{school.data?.name ?? "School"}</b>
@@ -49,7 +50,7 @@ export function Sidebar({ collapsed, onCollapse }: { collapsed: boolean; onColla
                 </div>
               );
             })
-          : mine.map(item) /* families have four items, so no group headings */}
+          : mine.map(item) /* families have three items, so no group headings */}
       </nav>
 
       <div className="foot">
@@ -78,9 +79,8 @@ function Item({ to, icon: Icon, label, active, count }: { to: string; icon: Luci
 /** How much is waiting in each app, by module name. Each count is only asked for by a role that may see it. */
 function useCounts(): Record<string, number> {
   const role = useMe().data?.role;
-  const isStaff = role === "admin" || role === "teacher";
-  const registers = useMyRegisters(isStaff);
-  const applications = useApplications(role === "admin");
+  const registers = useMyRegisters(inGroup(role, TEACHING));
+  const applications = useApplications(inGroup(role, OFFICE));
   const unread = useUnreadCount();
   return {
     attendance: (registers.data ?? []).filter((r) => !r.submitted).length,

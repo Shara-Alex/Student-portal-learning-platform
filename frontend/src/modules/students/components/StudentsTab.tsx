@@ -1,3 +1,4 @@
+import { EmptyRow } from "@/components/ui/skeleton";
 import { Badge, type Tone } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import { PageHeader } from "@/components/ui/page-header";
@@ -76,9 +77,7 @@ export function StudentsTab({ canEdit }: { canEdit: boolean }) {
                 <td><Badge tone={statusTone[s.status]}>{s.status}</Badge></td>
               </tr>
             ))}
-            {!rows.length && (
-              <tr><td colSpan={5} className="!py-8 text-center text-ink-muted">{students.isLoading ? "Loading…" : "No students found."}</td></tr>
-            )}
+            {!rows.length && <EmptyRow query={students} colSpan={5}>No students found.</EmptyRow>}
           </tbody>
         </table>
       </div>

@@ -1,3 +1,4 @@
+import { EmptyRow } from "@/components/ui/skeleton";
 import { TermPicker } from "@/components/TermPicker";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -79,7 +80,7 @@ export function InvoicesTab() {
                 <td><Badge tone={STATUS[i.status].tone}>{STATUS[i.status].label}</Badge></td>
               </tr>
             ))}
-            {!rows.length && <tr><td colSpan={6} className="!py-8 text-center text-ink-muted">{invoices.isLoading ? "Loading…" : "No invoices here yet. Use Bill a class to create them."}</td></tr>}
+            {!rows.length && <EmptyRow query={invoices} colSpan={6}>No invoices here yet. Use Bill a class to create them.</EmptyRow>}
           </tbody>
         </table>
       </div>
@@ -141,7 +142,7 @@ function BillForm({ term, onClose }: { term: string; onClose: () => void }) {
           {bill.isError && <p className="text-sm text-marker">{errorText(bill.error)}</p>}
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="default" onClick={onClose}>Cancel</Button>
-            <Button disabled={bill.isPending}>{bill.isPending ? "Working…" : "Create invoices"}</Button>
+            <Button busy={bill.isPending}>Create invoices</Button>
           </div>
         </form>
       )}

@@ -1,3 +1,4 @@
+import { ADMIN, inGroup, OFFICE } from "@/lib/roles";
 import { useSections } from "@/lib/sections";
 import { useMe } from "@/modules/core/api";
 import { ClassesTab } from "./components/ClassesTab";
@@ -9,9 +10,11 @@ import { sections } from "./sections";
 export function StudentsPage() {
   const { current } = useSections(sections);
   const me = useMe();
-  const canEdit = me.data?.role === "admin"; // teachers get a read-only view
+  // Admins and the front office keep student and guardian records; teachers and the bursar only read them.
+  const canEdit = inGroup(me.data?.role, OFFICE);
 
-  if (current === "classes") return <ClassesTab canEdit={canEdit} />;
+  // Classes (and year-end promotion) stay with the admin alone.
+  if (current === "classes") return <ClassesTab canEdit={inGroup(me.data?.role, ADMIN)} />;
   if (current === "guardians") return <GuardiansTab canEdit={canEdit} />;
   return <StudentsTab canEdit={canEdit} />;
 }

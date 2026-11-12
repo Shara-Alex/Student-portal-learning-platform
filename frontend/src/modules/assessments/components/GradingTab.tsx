@@ -84,7 +84,7 @@ function Weights({ settings, canEdit }: { settings: GradingSettings; canEdit: bo
           <div className="w-40"><Field label="Exam counts (%)"><Input disabled value={exam} /></Field></div>
           <div className="w-40"><Field label="Pass mark (%)"><Input type="number" min={0} max={100} required value={passMark} onChange={(e) => setPassMark(e.target.value)} /></Field></div>
         </fieldset>
-        {canEdit && <Button variant="default" disabled={save.isPending}>{save.isPending ? "Saving…" : "Save rules"}</Button>}
+        {canEdit && <Button variant="default" busy={save.isPending}>Save rules</Button>}
         {save.isSuccess && <span className="text-sm text-board">Saved. Every result has been recalculated.</span>}
         {save.isError && <span className="text-sm text-marker">{errorText(save.error)}</span>}
       </form>
@@ -114,7 +114,7 @@ function BandForm({ band, onClose }: { band: GradeBand | null; onClose: () => vo
         {save.isError && <p className="text-sm text-marker">{errorText(save.error)}</p>}
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="default" onClick={onClose}>Cancel</Button>
-          <Button disabled={save.isPending}>{save.isPending ? "Saving…" : "Save"}</Button>
+          <Button busy={save.isPending}>Save</Button>
         </div>
       </form>
     </Modal>

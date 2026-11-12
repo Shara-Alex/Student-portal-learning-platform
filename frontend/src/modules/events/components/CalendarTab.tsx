@@ -1,3 +1,4 @@
+import { EmptyRow } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
@@ -39,7 +40,7 @@ export function CalendarTab({ canEdit }: { canEdit: boolean }) {
                 <td className="text-ink-muted">{e.audience === "staff" ? "Staff only" : "Everyone"}</td>
               </tr>
             ))}
-            {!rows.length && <tr><td colSpan={4} className="!py-8 text-center text-ink-muted">{events.isLoading ? "Loading…" : "Nothing on the calendar."}</td></tr>}
+            {!rows.length && <EmptyRow query={events} colSpan={4}>Nothing on the calendar.</EmptyRow>}
           </tbody>
         </table>
       </div>
@@ -82,7 +83,7 @@ function EventForm({ event, onClose }: { event: SchoolEvent | null; onClose: () 
         <div className="flex justify-end gap-2 pt-2">
           {event && <Button type="button" variant="danger" className="mr-auto" onClick={() => window.confirm(`Delete ${event.title}?`) && remove.mutate(event.id, { onSuccess: onClose })}>Delete</Button>}
           <Button type="button" variant="default" onClick={onClose}>Cancel</Button>
-          <Button disabled={save.isPending}>{save.isPending ? "Saving…" : "Save"}</Button>
+          <Button busy={save.isPending}>Save</Button>
         </div>
       </form>
     </Modal>

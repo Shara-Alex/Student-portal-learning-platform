@@ -1,3 +1,4 @@
+import { EmptyRow } from "@/components/ui/skeleton";
 import { TermPicker } from "@/components/TermPicker";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge, type Tone } from "@/components/ui/badge";
@@ -43,7 +44,7 @@ export function SummaryTab() {
                 <td><Badge tone={attendanceTone(r.percent)}>{r.percent === null ? "No registers" : `${r.percent}%`}</Badge></td>
               </tr>
             ))}
-            {!rows.length && <tr><td colSpan={6} className="!py-8 text-center text-ink-muted">{summary.isLoading ? "Loading…" : "No students in this class."}</td></tr>}
+            {!rows.length && <EmptyRow query={summary} colSpan={6}>No students in this class.</EmptyRow>}
           </tbody>
         </table>
       </div>
