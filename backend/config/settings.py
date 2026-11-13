@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "apps.communication",
     "apps.admissions",
     "apps.notifications",
+    "apps.audit",
 ]
 
 MIDDLEWARE = [

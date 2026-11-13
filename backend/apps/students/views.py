@@ -1,9 +1,11 @@
+from django.db import transaction
 from django.db.models import Count, Prefetch, Q
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 
+from apps.audit import services as audit
 from apps.core.mixins import ProtectedDeleteMixin
 from apps.core.services import create_login
 from apps.core.permissions import IsAdmin, IsOffice, ReadOnlyOrAdmin, ReadOnlyOrOffice, StaffReadOfficeWrite
@@ -47,11 +49,13 @@ class GuardianViewSet(viewsets.ModelViewSet):
         guardian = self.get_object()
         if guardian.user_id:
             return Response({"detail": "This guardian already has a login."}, status=400)
-        guardian.user = create_login(
-            "parent", request.data.get("username"), request.data.get("password"), guardian.first_name, guardian.last_name,
-            email=guardian.email,  # so "forgot password" can reach them
-        )
-        guardian.save(update_fields=["user", "updated_at"])
+        with transaction.atomic():  # the login, the link to it and the audit entry: all or nothing
+            guardian.user = create_login(
+                "parent", request.data.get("username"), request.data.get("password"), guardian.first_name, guardian.last_name,
+                email=guardian.email,  # so "forgot password" can reach them
+            )
+            guardian.save(update_fields=["user", "updated_at"])
+            audit.log_login_created(request.user, guardian.user, guardian)
         return Response(self.get_serializer(guardian).data)
 
 
@@ -95,10 +99,12 @@ class StudentViewSet(viewsets.ModelViewSet):
         student = self.get_object()
         if student.user_id:
             return Response({"detail": "This student already has a login."}, status=400)
-        student.user = create_login(
-            "student", request.data.get("username"), request.data.get("password"), student.first_name, student.last_name
-        )
-        student.save(update_fields=["user", "updated_at"])
+        with transaction.atomic():
+            student.user = create_login(
+                "student", request.data.get("username"), request.data.get("password"), student.first_name, student.last_name
+            )
+            student.save(update_fields=["user", "updated_at"])
+            audit.log_login_created(request.user, student.user, student, student=student)
         return Response(self.get_serializer(student).data)
 
 

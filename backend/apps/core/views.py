@@ -1,5 +1,6 @@
 import os
 
+from django.db import transaction
 from django.db.models import Q
 from django.http import FileResponse
 from rest_framework import generics, mixins, status, viewsets
@@ -9,6 +10,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
+
+from apps.audit import services as audit
 
 from .mixins import ProtectedDeleteMixin
 from .models import AcademicYear, School, Term, User
@@ -178,11 +181,24 @@ class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Creat
             qs = qs.filter(Q(first_name__icontains=search) | Q(last_name__icontains=search) | Q(username__icontains=search))
         return qs
 
+    def perform_create(self, serializer):
+        with transaction.atomic():
+            user = serializer.save()
+            audit.log_user_created(self.request.user, user)
+
+    def perform_update(self, serializer):
+        before = audit.user_snapshot(serializer.instance)  # read before saving, to compare after
+        with transaction.atomic():
+            user = serializer.save()
+            audit.log_user_changed(self.request.user, user, before)
+
     @action(detail=True, methods=["post"], url_path="set-password", permission_classes=[IsAdmin])
     def set_password(self, request, pk=None):
         user = self.get_object()
         serializer = SetPasswordSerializer(data=request.data, context={"user": user})
         serializer.is_valid(raise_exception=True)
         user.set_password(serializer.validated_data["password"])
-        user.save(update_fields=["password"])
+        with transaction.atomic():
+            user.save(update_fields=["password"])
+            audit.log_password_set(request.user, user)  # the fact only; never the password
         return Response(status=status.HTTP_204_NO_CONTENT)

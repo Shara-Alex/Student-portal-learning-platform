@@ -9,6 +9,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.audit import services as audit
 from apps.core.models import Term
 from apps.core.permissions import FAMILY, FINANCE, IsFinance
 from apps.notifications.services import notify_payment
@@ -94,7 +95,9 @@ class InvoiceViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.De
     def perform_destroy(self, instance):
         if instance.payments.exists():
             raise serializers.ValidationError("This invoice has payments recorded against it, so it cannot be deleted.")
-        instance.delete()
+        with transaction.atomic():
+            audit.log_invoice_deleted(self.request.user, instance)  # before the delete, while its lines still exist
+            instance.delete()
 
     @action(detail=False)
     def summary(self, request):
@@ -158,8 +161,16 @@ class PaymentViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets
     permission_classes = [IsFinance]
 
     def perform_create(self, serializer):
-        payment = serializer.save(received_by=self.request.user)
-        notify_payment(payment)  # a receipt by email to the guardians
+        with transaction.atomic():  # the payment and its audit entry are saved together or not at all
+            payment = serializer.save(received_by=self.request.user)
+            audit.log_payment_recorded(self.request.user, payment)
+        notify_payment(payment)  # a receipt by email to the guardians, once the payment is safely saved
+
+    def perform_destroy(self, instance):
+        # A deleted payment changes what a family owes, so its full details are kept in the trail.
+        with transaction.atomic():
+            audit.log_payment_deleted(self.request.user, instance)
+            instance.delete()
 
 
 class StatementView(APIView):

@@ -11,7 +11,8 @@ import { Presets } from "@/components/ui/presets";
 import { Select } from "@/components/ui/select";
 import { errorText } from "@/lib/api";
 import { useClasses } from "@/modules/students/api";
-import { Plus } from "lucide-react";
+import { useFeeReminders } from "@/modules/notifications/api";
+import { Mail, Plus } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { useApplyLateFees, useBillClass, useDeleteInvoice, useFeeSummary, useInvoices, useMoney } from "../api";
 import { STATUS } from "../types";
@@ -25,6 +26,7 @@ export function InvoicesTab() {
   const [status, setStatus] = useState("");
   const [openId, setOpenId] = useState<number | null>(null);
   const [billing, setBilling] = useState(false);
+  const [reminding, setReminding] = useState(false);
   const invoices = useInvoices({ term, school_class: schoolClass, status });
   const summary = useFeeSummary(term);
   const lateFees = useApplyLateFees();
@@ -56,7 +58,8 @@ export function InvoicesTab() {
         </Select>
         {/* Homeroom's preset filters: "Overdue" is one tap, not a dropdown. */}
         <Presets label="Status" value={status} onChange={setStatus} options={[{ key: "", label: "All" }, ...Object.entries(STATUS).map(([key, s]) => ({ key, label: s.label }))]} />
-        <Button variant="default" className="ml-auto" disabled={lateFees.isPending} onClick={() => window.confirm("Add the late fee to every overdue invoice that has not had one yet?") && lateFees.mutate(undefined)}>
+        <Button variant="default" className="ml-auto" onClick={() => setReminding(true)}><Mail size={16} /> Send reminders</Button>
+        <Button variant="default" disabled={lateFees.isPending} onClick={() => window.confirm("Add the late fee to every overdue invoice that has not had one yet?") && lateFees.mutate(undefined)}>
           Apply late fees
         </Button>
       </div>
@@ -95,6 +98,7 @@ export function InvoicesTab() {
         </Modal>
       )}
       {billing && <BillForm term={term} onClose={() => setBilling(false)} />}
+      {reminding && <RemindForm term={term} onClose={() => setReminding(false)} />}
     </div>
   );
 }
@@ -142,6 +146,52 @@ function BillForm({ term, onClose }: { term: string; onClose: () => void }) {
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="default" onClick={onClose}>Cancel</Button>
             <Button busy={bill.isPending}>Create invoices</Button>
+          </div>
+        </form>
+      )}
+    </Modal>
+  );
+}
+
+/** Email fee reminders to the guardians of every student who still owes money for a term. */
+function RemindForm({ term, onClose }: { term: string; onClose: () => void }) {
+  const remind = useFeeReminders();
+  const [remindTerm, setRemindTerm] = useState(term);
+  const [overdueOnly, setOverdueOnly] = useState(true);
+
+  function onSubmit(e: FormEvent) {
+    e.preventDefault();
+    // An empty term becomes undefined, which JSON leaves out, so the server uses the current term.
+    remind.mutate({ term: Number(remindTerm) || undefined, overdue_only: overdueOnly });
+  }
+
+  const result = remind.data;
+  return (
+    <Modal title="Send fee reminders" onClose={onClose}>
+      {result ? (
+        <div className="space-y-3">
+          <p>{result.queued ? `${result.queued} reminder email(s) queued for guardians.` : "Nobody needed a reminder."}</p>
+          {result.no_email > 0 && (
+            <p className="rounded-md bg-bus-soft px-4 py-3 text-bus-ink">
+              <b>{result.no_email} {result.no_email === 1 ? "student has" : "students have"} no guardian email</b>, so nobody was reminded about them.
+              Add an email address to their guardian's record (Students, Guardians).
+            </p>
+          )}
+          <div className="flex justify-end"><Button onClick={onClose}>Done</Button></div>
+        </div>
+      ) : (
+        <form onSubmit={onSubmit} className="space-y-3">
+          <p className="text-sm text-ink-muted">
+            Emails the guardians of every student who still owes money for the term. Pressing it again on the same day does not send a second reminder.
+          </p>
+          <Field label="Term"><TermPicker value={remindTerm} onChange={setRemindTerm} /></Field>
+          <label className="flex items-center gap-2">
+            <input type="checkbox" checked={overdueOnly} onChange={(e) => setOverdueOnly(e.target.checked)} /> Only invoices that are overdue
+          </label>
+          {remind.isError && <p className="text-sm text-marker">{errorText(remind.error)}</p>}
+          <div className="flex justify-end gap-2 pt-2">
+            <Button type="button" variant="default" onClick={onClose}>Cancel</Button>
+            <Button busy={remind.isPending}>Send reminders</Button>
           </div>
         </form>
       )}

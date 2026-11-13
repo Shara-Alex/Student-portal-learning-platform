@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.academics.models import TeachingAssignment
+from apps.audit import services as audit
 from apps.core.models import Term
 from apps.core.permissions import IsStaff, StaffReadAdminWrite
 from apps.students.models import SchoolClass, Student
@@ -92,6 +93,12 @@ class AssessmentViewSet(viewsets.ModelViewSet):
                 qs = qs.filter(term_id=params["term"])
         return qs
 
+    def perform_destroy(self, instance):
+        # Deleting an assessment deletes its marks too, so it is recorded first, while the marks still exist.
+        with transaction.atomic():
+            audit.log_assessment_deleted(self.request.user, instance)
+            instance.delete()
+
     def _mark_sheet(self, assessment):
         saved = {m.student_id: m for m in assessment.marks.all()}
         students = class_students(assessment.assignment.school_class, assessment.assignment.year)
@@ -126,7 +133,10 @@ class AssessmentViewSet(viewsets.ModelViewSet):
             if entry["score"] is not None and entry["score"] > assessment.total_marks:
                 raise serializers.ValidationError(f"A score cannot be more than the total of {assessment.total_marks}.")
 
-        # All or nothing: a half-saved mark sheet would be worse than none.
+        # Read the marks as they are now, so the audit trail can say what each one was before.
+        before = {mark.student_id: mark for mark in assessment.marks.all()}
+        # All or nothing: a half-saved mark sheet would be worse than none. The audit entries
+        # are inside the same transaction, so they are saved together with the marks or not at all.
         with transaction.atomic():
             for entry in entries.validated_data:
                 Mark.objects.update_or_create(
@@ -134,6 +144,7 @@ class AssessmentViewSet(viewsets.ModelViewSet):
                     student_id=entry["student"],
                     defaults={"score": entry["score"], "comment": entry["comment"]},
                 )
+            audit.log_marks(request.user, assessment, before, entries.validated_data)
         return Response(self._mark_sheet(assessment))
 
     @action(detail=True, url_path=r"file/(?P<kind>paper|marking_scheme)")
