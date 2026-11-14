@@ -6,4 +6,5 @@ export const sections: Section[] = [
   { key: "school", label: "School profile" },
   { key: "calendar", label: "Years and terms" },
   { key: "notifications", label: "Notifications" },
+  { key: "audit", label: "Audit trail" },
 ];

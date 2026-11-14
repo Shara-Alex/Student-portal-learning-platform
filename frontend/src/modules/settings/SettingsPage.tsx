@@ -1,4 +1,5 @@
 import { useSections } from "@/lib/sections";
+import { AuditTab } from "./components/AuditTab";
 import { NotificationsTab } from "./components/NotificationsTab";
 import { SchoolTab } from "./components/SchoolTab";
 import { UsersTab } from "./components/UsersTab";
@@ -11,5 +12,6 @@ export function SettingsPage() {
   if (current === "school") return <SchoolTab />;
   if (current === "calendar") return <YearsTab />;
   if (current === "notifications") return <NotificationsTab />;
+  if (current === "audit") return <AuditTab />;
   return <UsersTab />;
 }
